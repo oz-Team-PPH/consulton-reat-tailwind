@@ -62,7 +62,7 @@ const Navbar = ({ onMenuClick, user }) => {
               <span className="text-white font-bold text-sm">C</span>
             </div>
             <h1 className="text-xl font-bold text-gray-900 hidden sm:block">
-              컨설톤
+              컨설트온
             </h1>
           </div>
         </div>

@@ -31,29 +31,59 @@ const Dashboard = () => {
   ];
 
   const packs = [
+    // 무료 시작 패키지
     {
       id: 1,
-      name: '기본 패키지',
-      description: '기본적인 상담 서비스',
-      price: 99000,
-      credits: 100,
-      features: ['텍스트 상담', '전문가 매칭', '상담 요약']
+      type: 'free',
+      name: '무료 체험',
+      description: '처음 사용자를 위한 무료 크레딧',
+      price: 0,
+      credits: 3,
+      features: ['3회 무료 상담', '전문가 매칭', '상담 요약', '모든 기능 체험']
     },
+    // 월간 구독 패키지
     {
       id: 2,
-      name: '프리미엄 패키지',
-      description: '종합적인 상담 서비스',
-      price: 199000,
-      credits: 250,
-      features: ['텍스트 상담', '비디오 상담', '전문가 매칭', '상담 요약', '우선 지원']
+      type: 'subscription',
+      name: 'Basic Pack',
+      description: '월간 구독형 기본 패키지',
+      price: 29000,
+      sessions: 3,
+      duration: 15,
+      payPerMinute: 1200,
+      features: ['매월 3세션 보장', '세션당 15분', '초과 시 분당 과금', '전문가 매칭', '상담 요약']
     },
     {
       id: 3,
-      name: '엔터프라이즈 패키지',
-      description: '기업용 전문 상담 서비스',
-      price: 399000,
+      type: 'subscription',
+      name: 'Pro Pack',
+      description: '월간 구독형 프리미엄 패키지',
+      price: 79000,
+      sessions: 10,
+      duration: 15,
+      payPerMinute: 1000,
+      features: ['매월 10세션 보장', '전문가 우선 배정', '상담 요약 PDF', '초과 사용 할인', '우선 고객지원']
+    },
+    // 크레딧 충전 패키지
+    {
+      id: 4,
+      type: 'credit',
+      name: '크레딧 충전',
+      description: '분 단위로 사용하는 충전형 크레딧',
+      price: 50000,
+      credits: 100,
+      payPerMinute: 500,
+      features: ['분 단위 자동 차감', '사용기한 없음', '원클릭 추가 충전', '잔액 부족 시 알림']
+    },
+    {
+      id: 5,
+      type: 'credit',
+      name: '크레딧 대용량',
+      description: '할인된 가격의 대용량 크레딧',
+      price: 200000,
       credits: 500,
-      features: ['모든 기능', '전담 매니저', '24시간 지원', '맞춤형 솔루션']
+      payPerMinute: 400,
+      features: ['20% 할인가', '분 단위 자동 차감', '사용기한 없음', '우선 고객지원']
     }
   ];
 
