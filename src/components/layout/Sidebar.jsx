@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
   MessageCircle,
@@ -13,11 +13,13 @@ import {
   BarChart3,
   CreditCard,
   Bell,
+  Sparkles,
 } from "lucide-react";
 
 const Sidebar = ({ isOpen, onClose }) => {
   const [activeItem, setActiveItem] = useState("dashboard");
   const navigate = useNavigate();
+  const location = useLocation();
 
   const menuItems = [
     {
@@ -35,11 +37,11 @@ const Sidebar = ({ isOpen, onClose }) => {
       description: "전문가 찾기",
     },
     {
-      id: "chat",
-      name: "채팅 상담",
-      icon: MessageCircle,
+      id: "chat", 
+      name: "AI채팅 상담",
+      icon: Sparkles,
       path: "/chat",
-      description: "진행 중인 상담",
+      description: "AI와 상담하기",
       badge: "2",
     },
     {
@@ -70,7 +72,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       id: "notifications",
       name: "알림 설정",
       icon: Bell,
-      path: "/settings",
+      path: "/notifications",
       description: "알림 관리",
     },
     {
@@ -95,6 +97,31 @@ const Sidebar = ({ isOpen, onClose }) => {
       description: "일반 설정",
     },
   ];
+
+  // 현재 URL에 따라 활성 메뉴 설정
+  useEffect(() => {
+    const currentPath = location.pathname;
+    
+    // 메인 메뉴에서 일치하는 항목 찾기
+    const mainMenuItem = menuItems.find(item => {
+      if (item.id === "summary") {
+        // 상담 요약의 경우 동적 경로 처리
+        return currentPath.startsWith("/summary/");
+      }
+      return currentPath === item.path;
+    });
+    
+    if (mainMenuItem) {
+      setActiveItem(mainMenuItem.id);
+      return;
+    }
+    
+    // 설정 메뉴에서 일치하는 항목 찾기
+    const settingMenuItem = settingsItems.find(item => currentPath === item.path);
+    if (settingMenuItem) {
+      setActiveItem(settingMenuItem.id);
+    }
+  }, [location.pathname]);
 
   const handleItemClick = (item) => {
     setActiveItem(item.id);
@@ -161,7 +188,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                         <IconComponent
                           className={`h-5 w-5 ${
                             isActive ? "text-blue-700" : "text-gray-500"
-                          }`}
+                          } ${item.id === "chat" ? "animate-pulse" : ""}`}
                         />
                         <div className="text-left">
                           <div className="font-medium">{item.name}</div>

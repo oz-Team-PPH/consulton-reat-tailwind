@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, ThumbsUp, ThumbsDown, MoreHorizontal, User } from 'lucide-react';
+import { Copy, ThumbsUp, ThumbsDown, MoreHorizontal, User, Bot, Sparkles } from 'lucide-react';
 
 const ChatBubble = ({ message }) => {
   const [showActions, setShowActions] = useState(false);
@@ -8,6 +8,7 @@ const ChatBubble = ({ message }) => {
 
   const isUser = message.type === 'user';
   const isExpert = message.type === 'expert';
+  const isAI = message.type === 'ai';
   const isSystem = message.type === 'system';
 
   const handleCopy = () => {
@@ -55,7 +56,11 @@ const ChatBubble = ({ message }) => {
         {/* 아바타 */}
         {!isUser && (
           <div className="flex-shrink-0">
-            {message.expertInfo?.avatar ? (
+            {isAI ? (
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
+                <Bot className="text-white w-4 h-4" />
+              </div>
+            ) : message.expertInfo?.avatar ? (
               <img
                 src={message.expertInfo.avatar}
                 alt={message.expertInfo.name}
@@ -73,15 +78,31 @@ const ChatBubble = ({ message }) => {
 
         {/* 메시지 내용 */}
         <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
-          {/* 발신자 정보 (전문가만) */}
-          {!isUser && message.expertInfo && (
+          {/* 발신자 정보 */}
+          {!isUser && (
             <div className="flex items-center space-x-2 mb-1">
-              <span className="text-sm font-medium text-gray-900">
-                {message.expertInfo.name}
-              </span>
-              <span className="text-xs text-gray-500">
-                {message.expertInfo.title}
-              </span>
+              {isAI ? (
+                <>
+                  <div className="flex items-center space-x-1">
+                    <Sparkles className="h-3 w-3 text-blue-500 animate-pulse" />
+                    <span className="text-sm font-medium text-gray-900">
+                      AI 어시스턴트
+                    </span>
+                  </div>
+                  <span className="text-xs text-blue-600">
+                    컨설트온 AI
+                  </span>
+                </>
+              ) : message.expertInfo && (
+                <>
+                  <span className="text-sm font-medium text-gray-900">
+                    {message.expertInfo.name}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {message.expertInfo.title}
+                  </span>
+                </>
+              )}
               <span className="text-xs text-gray-400">
                 {formatTime(message.timestamp)}
               </span>
@@ -91,12 +112,20 @@ const ChatBubble = ({ message }) => {
           {/* 메시지 버블 */}
           <div className="relative group">
             <div
-              className={`px-4 py-2 rounded-2xl ${
+              className={`px-4 py-2 rounded-2xl relative ${
                 isUser
                   ? 'bg-blue-600 text-white'
+                  : isAI
+                  ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-gray-900 border border-blue-200'
                   : 'bg-white text-gray-900 border border-gray-200'
               }`}
             >
+              {/* AI 메시지에만 반짝이는 아이콘 추가 */}
+              {isAI && (
+                <div className="absolute top-1 right-2">
+                  <Sparkles className="h-3 w-3 text-blue-400 animate-pulse opacity-50" />
+                </div>
+              )}
               <p className="text-sm whitespace-pre-wrap break-words">
                 {message.content}
               </p>

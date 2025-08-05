@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Send, Paperclip, Smile, Mic, MicOff } from 'lucide-react';
 
-const QuestionInput = ({ value, onChange, onSend, placeholder = "질문을 입력하세요..." }) => {
+const QuestionInput = ({ value, onChange, onSend, placeholder = "질문을 입력하세요...", disabled = false }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef(null);
@@ -17,7 +17,7 @@ const QuestionInput = ({ value, onChange, onSend, placeholder = "질문을 입�
   };
 
   const handleSend = () => {
-    if (value.trim()) {
+    if (value.trim() && !disabled) {
       onSend(value.trim());
       onChange('');
       setShowEmojiPicker(false);
@@ -81,8 +81,13 @@ const QuestionInput = ({ value, onChange, onSend, placeholder = "질문을 입�
       <div className="flex items-end space-x-3 bg-white border border-gray-300 rounded-lg p-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
         {/* 파일 첨부 버튼 */}
         <button
-          onClick={() => fileInputRef.current?.click()}
-          className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+          onClick={() => !disabled && fileInputRef.current?.click()}
+          disabled={disabled}
+          className={`flex-shrink-0 p-2 transition-colors rounded-lg ${
+            disabled 
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+          }`}
           title="파일 첨부"
         >
           <Paperclip className="h-5 w-5" />
@@ -103,12 +108,17 @@ const QuestionInput = ({ value, onChange, onSend, placeholder = "질문을 입�
             ref={textareaRef}
             value={value}
             onChange={(e) => {
-              onChange(e.target.value);
-              adjustTextareaHeight();
+              if (!disabled) {
+                onChange(e.target.value);
+                adjustTextareaHeight();
+              }
             }}
             onKeyPress={handleKeyPress}
             placeholder={placeholder}
-            className="w-full resize-none border-0 outline-none focus:ring-0 text-sm placeholder-gray-500 bg-transparent"
+            disabled={disabled}
+            className={`w-full resize-none border-0 outline-none focus:ring-0 text-sm placeholder-gray-500 bg-transparent ${
+              disabled ? 'cursor-not-allowed text-gray-400' : ''
+            }`}
             rows={1}
             style={{ minHeight: '24px', maxHeight: '120px' }}
           />
@@ -118,8 +128,13 @@ const QuestionInput = ({ value, onChange, onSend, placeholder = "질문을 입�
         <div className="flex items-center space-x-2">
           {/* 이모지 버튼 */}
           <button
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+            onClick={() => !disabled && setShowEmojiPicker(!showEmojiPicker)}
+            disabled={disabled}
+            className={`flex-shrink-0 p-2 transition-colors rounded-lg ${
+              disabled 
+                ? 'text-gray-300 cursor-not-allowed' 
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+            }`}
             title="이모지"
           >
             <Smile className="h-5 w-5" />
@@ -127,9 +142,12 @@ const QuestionInput = ({ value, onChange, onSend, placeholder = "질문을 입�
 
           {/* 음성 녹음 버튼 */}
           <button
-            onClick={toggleRecording}
+            onClick={() => !disabled && toggleRecording()}
+            disabled={disabled}
             className={`flex-shrink-0 p-2 transition-colors rounded-lg ${
-              isRecording 
+              disabled
+                ? 'text-gray-300 cursor-not-allowed'
+                : isRecording 
                 ? 'text-red-600 bg-red-50 hover:bg-red-100' 
                 : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
             }`}
@@ -141,9 +159,9 @@ const QuestionInput = ({ value, onChange, onSend, placeholder = "질문을 입�
           {/* 전송 버튼 */}
           <button
             onClick={handleSend}
-            disabled={!value.trim()}
+            disabled={!value.trim() || disabled}
             className={`flex-shrink-0 p-2 rounded-lg transition-colors ${
-              value.trim()
+              value.trim() && !disabled
                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}

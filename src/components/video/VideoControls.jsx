@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   Mic, MicOff, Video, VideoOff, Monitor, MonitorOff,
-  Phone, Settings, Users, MoreHorizontal, Record, Square
+  Phone, Settings, Users, MoreHorizontal, Circle, Square
 } from 'lucide-react';
 import MuteButton from './MuteButton';
 import VideoToggleButton from './VideoToggleButton';
@@ -59,7 +59,7 @@ const VideoControls = ({
         {isRecording ? (
           <Square className="h-5 w-5" />
         ) : (
-          <Record className="h-5 w-5" />
+          <Circle className="h-5 w-5" />
         )}
       </button>
 

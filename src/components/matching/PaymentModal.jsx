@@ -60,9 +60,8 @@ const PaymentModal = ({ expert, onClose }) => {
   ];
 
   const selectedType = consultationTypes.find(type => type.id === consultationType);
-  const basePrice = expert.pricePerHour * (estimatedDuration / 60);
-  const finalPrice = Math.round(basePrice * selectedType.creditRate);
-  const estimatedCredits = Math.round(finalPrice / 1000 * 10); // 1000원 = 10크레딧 가정
+  const baseCredits = expert.creditsPerMinute * estimatedDuration;
+  const finalCredits = Math.round(baseCredits * selectedType.creditRate);
 
   const handlePayment = async () => {
     setIsProcessing(true);
@@ -76,16 +75,16 @@ const PaymentModal = ({ expert, onClose }) => {
         consultationType,
         duration: estimatedDuration,
         paymentMethod: selectedPaymentMethod,
-        amount: finalPrice
+        credits: finalCredits
       });
 
-      // 결제 성공 시 상담 페이지로 이동
-      alert('결제가 완료되었습니다! 상담을 시작합니다.');
+      // 크레딧 사용 완료 시 상담 페이지로 이동
+      alert('크레딧 사용이 완료되었습니다! 상담을 시작합니다.');
       onClose();
       
     } catch (error) {
-      console.error('Payment failed:', error);
-      alert('결제에 실패했습니다. 다시 시도해주세요.');
+      console.error('Credit usage failed:', error);
+      alert('크레딧 사용에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsProcessing(false);
     }
@@ -113,7 +112,7 @@ const PaymentModal = ({ expert, onClose }) => {
           <div>
             <h2 className="text-xl font-bold text-gray-900">
               {currentStep === 1 ? '상담 방법 선택' : 
-               currentStep === 2 ? '결제 정보' : '결제 확인'}
+               currentStep === 2 ? '결제 정보' : '크레딧 사용 확인'}
             </h2>
             <p className="text-sm text-gray-600 mt-1">
               {expert.name} 전문가와의 상담
@@ -294,30 +293,26 @@ const PaymentModal = ({ expert, onClose }) => {
                   <span className="font-medium">{estimatedDuration}분</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">기본 요금</span>
-                  <span className="font-medium">{basePrice.toLocaleString()}원</span>
+                  <span className="text-gray-600">기본 크레딧</span>
+                  <span className="font-medium">{baseCredits} 크레딧</span>
                 </div>
                 {selectedType.creditRate !== 1.0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">{selectedType.name} 요금</span>
+                    <span className="text-gray-600">{selectedType.name} 추가 요금</span>
                     <span className="font-medium">x{selectedType.creditRate}</span>
                   </div>
                 )}
                 <div className="border-t pt-3 flex justify-between">
-                  <span className="font-semibold text-gray-900">총 결제 금액</span>
+                  <span className="font-semibold text-gray-900">총 사용 크레딧</span>
                   <span className="font-bold text-lg text-blue-600">
-                    {finalPrice.toLocaleString()}원
+                    {finalCredits} 크레딧
                   </span>
-                </div>
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>예상 크레딧 사용량</span>
-                  <span>{estimatedCredits} 크레딧</span>
                 </div>
               </div>
 
               <div className="text-sm text-gray-600 space-y-2">
-                <p>• 실제 상담 시간에 따라 최종 요금이 조정될 수 있습니다.</p>
-                <p>• 상담 중 언제든지 종료할 수 있으며, 사용한 시간만큼만 청구됩니다.</p>
+                <p>• 실제 상담 시간에 따라 최종 크레딧 사용량이 조정될 수 있습니다.</p>
+                <p>• 상담 중 언제든지 종료할 수 있으며, 사용한 시간만큼만 크레딧이 차감됩니다.</p>
                 <p>• 상담 완료 후 요약본과 녹음/녹화 파일을 제공합니다.</p>
               </div>
             </div>
@@ -327,9 +322,9 @@ const PaymentModal = ({ expert, onClose }) => {
         {/* 하단 버튼 */}
         <div className="flex items-center justify-between p-6 border-t bg-gray-50">
           <div className="text-right">
-            <div className="text-sm text-gray-600">예상 결제 금액</div>
+            <div className="text-sm text-gray-600">예상 사용 크레딧</div>
             <div className="text-lg font-bold text-blue-600">
-              {finalPrice.toLocaleString()}원
+              {finalCredits} 크레딧
             </div>
           </div>
 
@@ -359,7 +354,7 @@ const PaymentModal = ({ expert, onClose }) => {
               ) : currentStep < 3 ? (
                 '다음'
               ) : (
-                '결제하고 상담 시작'
+                '크레딧 사용하고 상담 시작'
               )}
             </button>
           </div>

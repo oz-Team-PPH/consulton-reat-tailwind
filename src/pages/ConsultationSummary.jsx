@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { 
   Download, Share2, Clock, User, Calendar, 
   FileText, Video, CheckSquare, Tag 
@@ -9,13 +10,14 @@ import SummaryCard from '../components/summary/SummaryCard';
 import ToDoList from '../components/summary/ToDoList';
 
 const ConsultationSummary = () => {
+  const { id } = useParams();
   const [summaryData, setSummaryData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('summary');
 
-  // 더미 상담 요약 데이터
+  // 더미 상담 요약 데이터 (실제로는 API에서 id를 기반으로 데이터 가져오기)
   const mockSummaryData = {
-    id: 'consultation-123',
+    id: `consultation-${id}`,
     title: '온라인 쇼핑몰 마케팅 전략 상담',
     date: new Date('2024-01-15T14:30:00'),
     duration: 45, // 분
@@ -92,12 +94,19 @@ const ConsultationSummary = () => {
   };
 
   useEffect(() => {
-    // 실제로는 API에서 데이터 가져오기
+    // 실제로는 API에서 id를 기반으로 데이터 가져오기
+    setLoading(true);
     setTimeout(() => {
-      setSummaryData(mockSummaryData);
+      // id를 기반으로 동적으로 데이터 생성 (실제로는 API 호출)
+      const dynamicData = {
+        ...mockSummaryData,
+        id: `consultation-${id}`,
+        title: id === '123' ? '온라인 쇼핑몰 마케팅 전략 상담' : `상담 세션 #${id}`
+      };
+      setSummaryData(dynamicData);
       setLoading(false);
     }, 1000);
-  }, []);
+  }, [id]);
 
   const handleDownloadSummary = () => {
     // PDF 다운로드 로직

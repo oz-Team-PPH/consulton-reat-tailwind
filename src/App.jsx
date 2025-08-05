@@ -10,6 +10,13 @@ import { useState } from "react";
 import Dashboard from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
 import CreditPackages from "./pages/CreditPackages";
+import ConsultationChat from "./pages/ConsultationChat";
+import ExpertMatching from "./pages/ExpertMatching";
+import ConsultationSummary from "./pages/ConsultationSummary";
+import VideoConsultation from "./pages/VideoConsultation";
+import NotificationSettings from "./pages/NotificationSettings";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 
 // Layout Components
 import Navbar from "./components/layout/Navbar";
@@ -52,47 +59,47 @@ function App() {
       {!showLanding && (
         <Router>
           <div className="min-h-screen bg-gray-50">
-            <Routes>
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <div className="flex min-h-screen">
-                      {/* 사이드바 */}
-                      <Sidebar
-                        isOpen={sidebarOpen}
-                        onClose={() => setSidebarOpen(false)}
+            <ProtectedRoute>
+              <div className="flex min-h-screen">
+                {/* 사이드바 */}
+                <Sidebar
+                  isOpen={sidebarOpen}
+                  onClose={() => setSidebarOpen(false)}
+                />
+
+                {/* 메인 콘텐츠 */}
+                <div className="flex-1 flex flex-col">
+                  {/* 상단 네비게이션 */}
+                  <Navbar
+                    onMenuClick={() => setSidebarOpen(true)}
+                    onBackToLanding={handleBackToLanding}
+                    user={{ name: "김철수", avatar: null }}
+                  />
+
+                  {/* 페이지 콘텐츠 */}
+                  <main className="pt-16 lg:ml-64">
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={<Navigate to="/dashboard" replace />}
                       />
-
-                      {/* 메인 콘텐츠 */}
-                      <div className="flex-1 flex flex-col">
-                        {/* 상단 네비게이션 */}
-                        <Navbar
-                          onMenuClick={() => setSidebarOpen(true)}
-                          onBackToLanding={handleBackToLanding}
-                          user={{ name: "김철수", avatar: null }}
-                        />
-
-                        {/* 페이지 콘텐츠 */}
-                        <main className="pt-16 lg:ml-64">
-                          <Routes>
-                            <Route
-                              path="/"
-                              element={<Navigate to="/dashboard" replace />}
-                            />
-                            <Route path="/dashboard" element={<Dashboard />} />
-                            <Route
-                              path="/credit-packages"
-                              element={<CreditPackages />}
-                            />
-                          </Routes>
-                        </main>
-                      </div>
-                    </div>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route
+                        path="/credit-packages"
+                        element={<CreditPackages />}
+                      />
+                      <Route path="/chat" element={<ConsultationChat />} />
+                      <Route path="/experts" element={<ExpertMatching />} />
+                      <Route path="/video" element={<VideoConsultation />} />
+                      <Route path="/summary/:id" element={<ConsultationSummary />} />
+                      <Route path="/notifications" element={<NotificationSettings />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/settings" element={<Settings />} />
+                    </Routes>
+                  </main>
+                </div>
+              </div>
+            </ProtectedRoute>
           </div>
         </Router>
       )}
