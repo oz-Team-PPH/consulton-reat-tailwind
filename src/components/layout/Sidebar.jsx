@@ -1,93 +1,104 @@
-import { useState } from 'react';
-import { 
-  Home, MessageCircle, Users, Video, FileText, 
-  Settings, User, X, ChevronRight, BarChart3,
-  CreditCard, Bell
-} from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Home,
+  MessageCircle,
+  Users,
+  Video,
+  FileText,
+  Settings,
+  User,
+  X,
+  ChevronRight,
+  BarChart3,
+  CreditCard,
+  Bell,
+} from "lucide-react";
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const [activeItem, setActiveItem] = useState('dashboard');
+  const [activeItem, setActiveItem] = useState("dashboard");
+  const navigate = useNavigate();
 
   const menuItems = [
     {
-      id: 'dashboard',
-      name: '대시보드',
+      id: "dashboard",
+      name: "대시보드",
       icon: Home,
-      path: '/dashboard',
-      description: '전체 현황 보기'
+      path: "/dashboard",
+      description: "전체 현황 보기",
     },
     {
-      id: 'experts',
-      name: '전문가 매칭',
+      id: "experts",
+      name: "전문가 매칭",
       icon: Users,
-      path: '/experts',
-      description: '전문가 찾기'
+      path: "/experts",
+      description: "전문가 찾기",
     },
     {
-      id: 'chat',
-      name: '채팅 상담',
+      id: "chat",
+      name: "채팅 상담",
       icon: MessageCircle,
-      path: '/chat',
-      description: '진행 중인 상담',
-      badge: '2'
+      path: "/chat",
+      description: "진행 중인 상담",
+      badge: "2",
     },
     {
-      id: 'video',
-      name: '화상 상담',
+      id: "video",
+      name: "화상 상담",
       icon: Video,
-      path: '/video',
-      description: '화상 회의'
+      path: "/video",
+      description: "화상 회의",
     },
     {
-      id: 'summary',
-      name: '상담 요약',
+      id: "summary",
+      name: "상담 요약",
       icon: FileText,
-      path: '/summary/123',
-      description: '상담 기록 보기'
+      path: "/summary/123",
+      description: "상담 기록 보기",
     },
     {
-      id: 'analytics',
-      name: '분석 리포트',
+      id: "analytics",
+      name: "분석 리포트",
       icon: BarChart3,
-      path: '/analytics',
-      description: '상담 통계'
-    }
+      path: "/analytics",
+      description: "상담 통계",
+    },
   ];
 
   const settingsItems = [
     {
-      id: 'notifications',
-      name: '알림 설정',
+      id: "notifications",
+      name: "알림 설정",
       icon: Bell,
-      path: '/settings',
-      description: '알림 관리'
+      path: "/settings",
+      description: "알림 관리",
     },
     {
-      id: 'profile',
-      name: '프로필',
+      id: "profile",
+      name: "프로필",
       icon: User,
-      path: '/profile',
-      description: '계정 정보'
+      path: "/profile",
+      description: "계정 정보",
     },
     {
-      id: 'billing',
-      name: '결제 및 크레딧',
+      id: "billing",
+      name: "결제 및 크레딧",
       icon: CreditCard,
-      path: '/billing',
-      description: '크레딧 관리'
+      path: "/credit-packages",
+      description: "크레딧 관리",
     },
     {
-      id: 'settings',
-      name: '설정',
+      id: "settings",
+      name: "설정",
       icon: Settings,
-      path: '/settings',
-      description: '일반 설정'
-    }
+      path: "/settings",
+      description: "일반 설정",
+    },
   ];
 
   const handleItemClick = (item) => {
     setActiveItem(item.id);
-    window.location.href = item.path;
+    navigate(item.path);
     onClose(); // 모바일에서 메뉴 선택 시 사이드바 닫기
   };
 
@@ -95,24 +106,26 @@ const Sidebar = ({ isOpen, onClose }) => {
     <>
       {/* 모바일 오버레이 */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* 사이드바 */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      <div
+        className={`fixed top-0 left-0 bottom-0 z-30 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="flex flex-col h-full">
-          {/* 사이드바 헤더 */}
+          {/* 네비게이션 바 공간 확보 */}
+          <div className="h-16"></div>
+
+          {/* 모바일용 닫기 버튼 헤더 */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 lg:hidden">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
-              </div>
-              <h1 className="text-xl font-bold text-gray-900">컨설톤</h1>
+              <span className="text-sm text-gray-600">메뉴</span>
             </div>
             <button
               onClick={onClose}
@@ -133,36 +146,42 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {menuItems.map((item) => {
                   const IconComponent = item.icon;
                   const isActive = activeItem === item.id;
-                  
+
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleItemClick(item)}
                       className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+                          : "text-gray-700 hover:bg-gray-100"
                       }`}
                     >
                       <div className="flex items-center space-x-3">
-                        <IconComponent className={`h-5 w-5 ${
-                          isActive ? 'text-blue-700' : 'text-gray-500'
-                        }`} />
+                        <IconComponent
+                          className={`h-5 w-5 ${
+                            isActive ? "text-blue-700" : "text-gray-500"
+                          }`}
+                        />
                         <div className="text-left">
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-xs text-gray-500">{item.description}</div>
+                          <div className="text-xs text-gray-500">
+                            {item.description}
+                          </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-2">
                         {item.badge && (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                             {item.badge}
                           </span>
                         )}
-                        <ChevronRight className={`h-4 w-4 ${
-                          isActive ? 'text-blue-700' : 'text-gray-400'
-                        }`} />
+                        <ChevronRight
+                          className={`h-4 w-4 ${
+                            isActive ? "text-blue-700" : "text-gray-400"
+                          }`}
+                        />
                       </div>
                     </button>
                   );
@@ -179,30 +198,36 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {settingsItems.map((item) => {
                   const IconComponent = item.icon;
                   const isActive = activeItem === item.id;
-                  
+
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleItemClick(item)}
                       className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+                          : "text-gray-700 hover:bg-gray-100"
                       }`}
                     >
                       <div className="flex items-center space-x-3">
-                        <IconComponent className={`h-5 w-5 ${
-                          isActive ? 'text-blue-700' : 'text-gray-500'
-                        }`} />
+                        <IconComponent
+                          className={`h-5 w-5 ${
+                            isActive ? "text-blue-700" : "text-gray-500"
+                          }`}
+                        />
                         <div className="text-left">
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-xs text-gray-500">{item.description}</div>
+                          <div className="text-xs text-gray-500">
+                            {item.description}
+                          </div>
                         </div>
                       </div>
-                      
-                      <ChevronRight className={`h-4 w-4 ${
-                        isActive ? 'text-blue-700' : 'text-gray-400'
-                      }`} />
+
+                      <ChevronRight
+                        className={`h-4 w-4 ${
+                          isActive ? "text-blue-700" : "text-gray-400"
+                        }`}
+                      />
                     </button>
                   );
                 })}
@@ -218,11 +243,16 @@ const Sidebar = ({ isOpen, onClose }) => {
                   <CreditCard className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-blue-900">크레딧 잔액</div>
+                  <div className="text-sm font-medium text-blue-900">
+                    크레딧 잔액
+                  </div>
                   <div className="text-xs text-blue-700">150 크레딧 보유</div>
                 </div>
               </div>
-              <button className="w-full bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => navigate("/credit-packages")}
+                className="w-full bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 크레딧 충전
               </button>
             </div>

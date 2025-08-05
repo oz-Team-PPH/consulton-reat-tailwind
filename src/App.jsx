@@ -1,18 +1,42 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { useState } from "react";
 
-// Pages - 단계적 import
-import Dashboard from './pages/Dashboard';
+// Pages
+import Dashboard from "./pages/Dashboard";
+import LandingPage from "./pages/LandingPage";
+import CreditPackages from "./pages/CreditPackages";
 
 // Layout Components
-import Navbar from './components/layout/Navbar';
-import Sidebar from './components/layout/Sidebar';
+import Navbar from "./components/layout/Navbar";
+import Sidebar from "./components/layout/Sidebar";
 
-import './App.css';
+import "./App.css";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // 개발용으로 true 설정
+  const [isAuthenticated, _setIsAuthenticated] = useState(true); // 개발용으로 true 설정
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // localStorage에서 서비스 진입 상태를 확인, 기본값은 true (랜딩페이지 표시)
+  const [showLanding, setShowLanding] = useState(() => {
+    const hasEnteredService = localStorage.getItem("hasEnteredService");
+    return hasEnteredService !== "true";
+  });
+
+  // 서비스 진입 핸들러
+  const handleEnterService = () => {
+    setShowLanding(false);
+    localStorage.setItem("hasEnteredService", "true");
+  };
+
+  // 랜딩페이지로 돌아가기 핸들러
+  const handleBackToLanding = () => {
+    setShowLanding(true);
+    localStorage.removeItem("hasEnteredService");
+  };
 
   // 인증이 필요한 페이지들을 위한 보호된 라우트
   const ProtectedRoute = ({ children }) => {
@@ -20,41 +44,59 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Routes>
-          {/* 대시보드만 먼저 테스트 */}
-          <Route path="/*" element={
-            <ProtectedRoute>
-              <div className="flex h-screen">
-                {/* 사이드바 */}
-                <Sidebar 
-                  isOpen={sidebarOpen} 
-                  onClose={() => setSidebarOpen(false)} 
-                />
+    <div className="min-h-screen bg-gray-50">
+      {/* 랜딩페이지 */}
+      {showLanding && <LandingPage onEnterService={handleEnterService} />}
 
-                {/* 메인 콘텐츠 */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  {/* 상단 네비게이션 */}
-                  <Navbar 
-                    onMenuClick={() => setSidebarOpen(true)}
-                    user={{ name: '김철수', avatar: null }}
-                  />
+      {/* 서비스 화면 */}
+      {!showLanding && (
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Routes>
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen">
+                      {/* 사이드바 */}
+                      <Sidebar
+                        isOpen={sidebarOpen}
+                        onClose={() => setSidebarOpen(false)}
+                      />
 
-                  {/* 페이지 콘텐츠 */}
-                  <main className="flex-1 overflow-y-auto">
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                    </Routes>
-                  </main>
-                </div>
-              </div>
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </div>
-    </Router>
+                      {/* 메인 콘텐츠 */}
+                      <div className="flex-1 flex flex-col">
+                        {/* 상단 네비게이션 */}
+                        <Navbar
+                          onMenuClick={() => setSidebarOpen(true)}
+                          onBackToLanding={handleBackToLanding}
+                          user={{ name: "김철수", avatar: null }}
+                        />
+
+                        {/* 페이지 콘텐츠 */}
+                        <main className="pt-16 lg:ml-64">
+                          <Routes>
+                            <Route
+                              path="/"
+                              element={<Navigate to="/dashboard" replace />}
+                            />
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route
+                              path="/credit-packages"
+                              element={<CreditPackages />}
+                            />
+                          </Routes>
+                        </main>
+                      </div>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
+        </Router>
+      )}
+    </div>
   );
 }
 
