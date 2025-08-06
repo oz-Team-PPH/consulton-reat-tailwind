@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Menu, User, Settings, LogOut } from "lucide-react";
 
-const Navbar = ({ onMenuClick, onBackToLanding }) => {
+const Navbar = ({ onMenuClick, onBackToLanding, onNavigate }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isToggleOn, setIsToggleOn] = useState(true);
 
@@ -82,17 +82,11 @@ const Navbar = ({ onMenuClick, onBackToLanding }) => {
         <div className="flex items-center justify-between flex-1 lg:justify-end">
           {/* 네비게이션 링크들 - 데스크탑에서만 표시 */}
           <div className="hidden lg:flex items-center space-x-8">
-            <button className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200">
-              대시보드
-            </button>
-            <button className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200">
-              전문가 매칭
-            </button>
-            <button className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200">
-              화상 상담
-            </button>
-            <button className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200">
-              상담 기록
+            <button
+              onClick={() => onNavigate && onNavigate("expertSearch")}
+              className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+            >
+              전문가찾기
             </button>
           </div>
 

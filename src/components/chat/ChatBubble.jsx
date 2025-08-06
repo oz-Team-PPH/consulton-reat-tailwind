@@ -1,20 +1,27 @@
-import { useState } from 'react';
-import { Copy, ThumbsUp, ThumbsDown, MoreHorizontal, User, Bot, Sparkles } from 'lucide-react';
+import { useState } from "react";
+import {
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  MoreHorizontal,
+  User,
+  Bot,
+} from "lucide-react";
 
 const ChatBubble = ({ message }) => {
   const [showActions, setShowActions] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
 
-  const isUser = message.type === 'user';
-  const isExpert = message.type === 'expert';
-  const isAI = message.type === 'ai';
-  const isSystem = message.type === 'system';
+  const isUser = message.type === "user";
+  const isExpert = message.type === "expert";
+  const isAI = message.type === "ai";
+  const isSystem = message.type === "system";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
     // 복사 완료 알림 표시
-    console.log('Message copied to clipboard');
+    console.log("Message copied to clipboard");
   };
 
   const handleLike = () => {
@@ -30,9 +37,9 @@ const ChatBubble = ({ message }) => {
   };
 
   const formatTime = (timestamp) => {
-    return timestamp.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit'
+    return timestamp.toLocaleTimeString("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -48,11 +55,15 @@ const ChatBubble = ({ message }) => {
 
   return (
     <div
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
+      className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} items-start space-x-3 max-w-[70%]`}>
+      <div
+        className={`flex ${
+          isUser ? "flex-row-reverse" : "flex-row"
+        } items-start space-x-3 max-w-[70%]`}
+      >
         {/* 아바타 */}
         {!isUser && (
           <div className="flex-shrink-0">
@@ -69,7 +80,7 @@ const ChatBubble = ({ message }) => {
             ) : (
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
-                  {message.expertInfo?.name?.charAt(0) || 'E'}
+                  {message.expertInfo?.name?.charAt(0) || "E"}
                 </span>
               </div>
             )}
@@ -77,31 +88,32 @@ const ChatBubble = ({ message }) => {
         )}
 
         {/* 메시지 내용 */}
-        <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+        <div
+          className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
+        >
           {/* 발신자 정보 */}
           {!isUser && (
             <div className="flex items-center space-x-2 mb-1">
               {isAI ? (
                 <>
                   <div className="flex items-center space-x-1">
-                    <Sparkles className="h-3 w-3 text-blue-500 animate-pulse" />
                     <span className="text-sm font-medium text-gray-900">
                       AI 어시스턴트
                     </span>
                   </div>
-                  <span className="text-xs text-blue-600">
-                    컨설트온 AI
-                  </span>
+                  <span className="text-xs text-blue-600">컨설트온 AI</span>
                 </>
-              ) : message.expertInfo && (
-                <>
-                  <span className="text-sm font-medium text-gray-900">
-                    {message.expertInfo.name}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {message.expertInfo.title}
-                  </span>
-                </>
+              ) : (
+                message.expertInfo && (
+                  <>
+                    <span className="text-sm font-medium text-gray-900">
+                      {message.expertInfo.name}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {message.expertInfo.title}
+                    </span>
+                  </>
+                )
               )}
               <span className="text-xs text-gray-400">
                 {formatTime(message.timestamp)}
@@ -114,18 +126,12 @@ const ChatBubble = ({ message }) => {
             <div
               className={`px-4 py-2 rounded-2xl relative ${
                 isUser
-                  ? 'bg-blue-600 text-white'
+                  ? "bg-blue-600 text-white"
                   : isAI
-                  ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-gray-900 border border-blue-200'
-                  : 'bg-white text-gray-900 border border-gray-200'
+                  ? "bg-gradient-to-r from-blue-50 to-purple-50 text-gray-900 border border-blue-200"
+                  : "bg-white text-gray-900 border border-gray-200"
               }`}
             >
-              {/* AI 메시지에만 반짝이는 아이콘 추가 */}
-              {isAI && (
-                <div className="absolute top-1 right-2">
-                  <Sparkles className="h-3 w-3 text-blue-400 animate-pulse opacity-50" />
-                </div>
-              )}
               <p className="text-sm whitespace-pre-wrap break-words">
                 {message.content}
               </p>
@@ -142,7 +148,7 @@ const ChatBubble = ({ message }) => {
             {showActions && (
               <div
                 className={`absolute top-0 ${
-                  isUser ? 'right-full mr-2' : 'left-full ml-2'
+                  isUser ? "right-full mr-2" : "left-full ml-2"
                 } flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity`}
               >
                 {/* 복사 버튼 */}
@@ -161,8 +167,8 @@ const ChatBubble = ({ message }) => {
                       onClick={handleLike}
                       className={`p-1 rounded transition-colors ${
                         isLiked
-                          ? 'text-green-600 bg-green-100'
-                          : 'text-gray-400 hover:text-green-600 hover:bg-green-100'
+                          ? "text-green-600 bg-green-100"
+                          : "text-gray-400 hover:text-green-600 hover:bg-green-100"
                       }`}
                       title="도움이 됨"
                     >
@@ -173,8 +179,8 @@ const ChatBubble = ({ message }) => {
                       onClick={handleDislike}
                       className={`p-1 rounded transition-colors ${
                         isDisliked
-                          ? 'text-red-600 bg-red-100'
-                          : 'text-gray-400 hover:text-red-600 hover:bg-red-100'
+                          ? "text-red-600 bg-red-100"
+                          : "text-gray-400 hover:text-red-600 hover:bg-red-100"
                       }`}
                       title="개선 필요"
                     >

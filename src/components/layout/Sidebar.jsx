@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
@@ -21,107 +21,119 @@ const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const menuItems = [
-    {
-      id: "dashboard",
-      name: "대시보드",
-      icon: Home,
-      path: "/dashboard",
-      description: "전체 현황 보기",
-    },
-    {
-      id: "experts",
-      name: "전문가 매칭",
-      icon: Users,
-      path: "/experts",
-      description: "전문가 찾기",
-    },
-    {
-      id: "chat", 
-      name: "AI채팅 상담",
-      icon: Sparkles,
-      path: "/chat",
-      description: "AI와 상담하기",
-      badge: "2",
-    },
-    {
-      id: "video",
-      name: "화상 상담",
-      icon: Video,
-      path: "/video",
-      description: "화상 회의",
-    },
-    {
-      id: "summary",
-      name: "상담 요약",
-      icon: FileText,
-      path: "/summary/123",
-      description: "상담 기록 보기",
-    },
-    {
-      id: "analytics",
-      name: "분석 리포트",
-      icon: BarChart3,
-      path: "/analytics",
-      description: "상담 통계",
-    },
-  ];
+  const menuItems = useMemo(
+    () => [
+      {
+        id: "dashboard",
+        name: "대시보드",
+        icon: Home,
+        path: "/dashboard",
+        description: "전체 현황 보기",
+      },
+      {
+        id: "experts",
+        name: "전문가 찾기",
+        icon: Users,
+        path: "/expert-search",
+        description: "전문가 검색 및 매칭",
+      },
+      {
+        id: "chat",
+        name: "AI채팅 상담",
+        icon: Sparkles,
+        path: "/chat",
+        description: "AI와 상담하기",
+        badge: "2",
+      },
+      {
+        id: "video",
+        name: "화상 상담",
+        icon: Video,
+        path: "/video",
+        description: "화상 회의",
+      },
+      {
+        id: "summary",
+        name: "상담 요약",
+        icon: FileText,
+        path: "/summary/123",
+        description: "상담 기록 보기",
+      },
+      {
+        id: "analytics",
+        name: "분석 리포트",
+        icon: BarChart3,
+        path: "/analytics",
+        description: "상담 통계",
+      },
+    ],
+    []
+  );
 
-  const settingsItems = [
-    {
-      id: "notifications",
-      name: "알림 설정",
-      icon: Bell,
-      path: "/notifications",
-      description: "알림 관리",
-    },
-    {
-      id: "profile",
-      name: "프로필",
-      icon: User,
-      path: "/profile",
-      description: "계정 정보",
-    },
-    {
-      id: "billing",
-      name: "결제 및 크레딧",
-      icon: CreditCard,
-      path: "/credit-packages",
-      description: "크레딧 관리",
-    },
-    {
-      id: "settings",
-      name: "설정",
-      icon: Settings,
-      path: "/settings",
-      description: "일반 설정",
-    },
-  ];
+  const settingsItems = useMemo(
+    () => [
+      {
+        id: "notifications",
+        name: "알림 설정",
+        icon: Bell,
+        path: "/notifications",
+        description: "알림 관리",
+      },
+      {
+        id: "profile",
+        name: "프로필",
+        icon: User,
+        path: "/profile",
+        description: "계정 정보",
+      },
+      {
+        id: "billing",
+        name: "결제 및 크레딧",
+        icon: CreditCard,
+        path: "/credit-packages",
+        description: "크레딧 관리",
+      },
+      {
+        id: "settings",
+        name: "설정",
+        icon: Settings,
+        path: "/settings",
+        description: "일반 설정",
+      },
+    ],
+    []
+  );
 
   // 현재 URL에 따라 활성 메뉴 설정
   useEffect(() => {
     const currentPath = location.pathname;
-    
+
     // 메인 메뉴에서 일치하는 항목 찾기
-    const mainMenuItem = menuItems.find(item => {
+    const mainMenuItem = menuItems.find((item) => {
       if (item.id === "summary") {
         // 상담 요약의 경우 동적 경로 처리
         return currentPath.startsWith("/summary/");
       }
+      if (item.id === "experts") {
+        // 전문가 찾기의 경우 /expert-search 경로 처리
+        return currentPath === "/expert-search";
+      }
       return currentPath === item.path;
     });
-    
+
     if (mainMenuItem) {
       setActiveItem(mainMenuItem.id);
       return;
     }
-    
+
     // 설정 메뉴에서 일치하는 항목 찾기
-    const settingMenuItem = settingsItems.find(item => currentPath === item.path);
+    const settingMenuItem = settingsItems.find(
+      (item) => currentPath === item.path
+    );
     if (settingMenuItem) {
       setActiveItem(settingMenuItem.id);
     }
-  }, [location.pathname]);
+  }, [location.pathname, menuItems, settingsItems]);
 
   const handleItemClick = (item) => {
     setActiveItem(item.id);

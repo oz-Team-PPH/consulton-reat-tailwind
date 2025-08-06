@@ -5,13 +5,15 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
 import CreditPackages from "./pages/CreditPackages";
 import ConsultationChat from "./pages/ConsultationChat";
-import ExpertMatching from "./pages/ExpertMatching";
+
+import ExpertSearch from "./pages/ExpertSearch";
 import ConsultationSummary from "./pages/ConsultationSummary";
 import VideoConsultation from "./pages/VideoConsultation";
 import NotificationSettings from "./pages/NotificationSettings";
@@ -50,6 +52,52 @@ function App() {
     return isAuthenticated ? children : <Navigate to="/dashboard" replace />;
   };
 
+  // 네비게이션 핸들러를 위한 컴포넌트
+  const AppContent = () => {
+    const navigate = useNavigate();
+
+    const handleNavigation = (page) => {
+      if (page === "expertSearch") {
+        navigate("/expert-search");
+      }
+    };
+
+    return (
+      <div className="flex min-h-screen">
+        {/* 사이드바 */}
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+        {/* 메인 콘텐츠 */}
+        <div className="flex-1 flex flex-col">
+          {/* 상단 네비게이션 */}
+          <Navbar
+            onMenuClick={() => setSidebarOpen(true)}
+            onBackToLanding={handleBackToLanding}
+            onNavigate={handleNavigation}
+            user={{ name: "김철수", avatar: null }}
+          />
+
+          {/* 페이지 콘텐츠 */}
+          <main className="pt-16 lg:ml-64">
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/expert-search" element={<ExpertSearch />} />
+              <Route path="/credit-packages" element={<CreditPackages />} />
+              <Route path="/chat" element={<ConsultationChat />} />
+
+              <Route path="/video" element={<VideoConsultation />} />
+              <Route path="/summary/:id" element={<ConsultationSummary />} />
+              <Route path="/notifications" element={<NotificationSettings />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
+            </Routes>
+          </main>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 랜딩페이지 */}
@@ -60,45 +108,7 @@ function App() {
         <Router>
           <div className="min-h-screen bg-gray-50">
             <ProtectedRoute>
-              <div className="flex min-h-screen">
-                {/* 사이드바 */}
-                <Sidebar
-                  isOpen={sidebarOpen}
-                  onClose={() => setSidebarOpen(false)}
-                />
-
-                {/* 메인 콘텐츠 */}
-                <div className="flex-1 flex flex-col">
-                  {/* 상단 네비게이션 */}
-                  <Navbar
-                    onMenuClick={() => setSidebarOpen(true)}
-                    onBackToLanding={handleBackToLanding}
-                    user={{ name: "김철수", avatar: null }}
-                  />
-
-                  {/* 페이지 콘텐츠 */}
-                  <main className="pt-16 lg:ml-64">
-                    <Routes>
-                      <Route
-                        path="/"
-                        element={<Navigate to="/dashboard" replace />}
-                      />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route
-                        path="/credit-packages"
-                        element={<CreditPackages />}
-                      />
-                      <Route path="/chat" element={<ConsultationChat />} />
-                      <Route path="/experts" element={<ExpertMatching />} />
-                      <Route path="/video" element={<VideoConsultation />} />
-                      <Route path="/summary/:id" element={<ConsultationSummary />} />
-                      <Route path="/notifications" element={<NotificationSettings />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/settings" element={<Settings />} />
-                    </Routes>
-                  </main>
-                </div>
-              </div>
+              <AppContent />
             </ProtectedRoute>
           </div>
         </Router>
