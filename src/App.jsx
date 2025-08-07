@@ -12,13 +12,15 @@ import Dashboard from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
 import CreditPackages from "./pages/CreditPackages";
 import ConsultationChat from "./pages/ConsultationChat";
+import Community from "./pages/Community";
 
 import ExpertSearch from "./pages/ExpertSearch";
 import ConsultationSummary from "./pages/ConsultationSummary";
 import VideoConsultation from "./pages/VideoConsultation";
 import NotificationSettings from "./pages/NotificationSettings";
-import Profile from "./pages/Profile";
+
 import Settings from "./pages/Settings";
+import Analytics from "./pages/Analytics";
 
 // Layout Components
 import Navbar from "./components/layout/Navbar";
@@ -59,6 +61,8 @@ function App() {
     const handleNavigation = (page) => {
       if (page === "expertSearch") {
         navigate("/expert-search");
+      } else if (page === "community") {
+        navigate("/community");
       }
     };
 
@@ -83,13 +87,15 @@ function App() {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/expert-search" element={<ExpertSearch />} />
+              <Route path="/community" element={<Community />} />
               <Route path="/credit-packages" element={<CreditPackages />} />
               <Route path="/chat" element={<ConsultationChat />} />
 
               <Route path="/video" element={<VideoConsultation />} />
               <Route path="/summary/:id" element={<ConsultationSummary />} />
+              <Route path="/analytics" element={<Analytics />} />
               <Route path="/notifications" element={<NotificationSettings />} />
-              <Route path="/profile" element={<Profile />} />
+
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>

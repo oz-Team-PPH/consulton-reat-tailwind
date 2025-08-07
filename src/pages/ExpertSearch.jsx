@@ -523,12 +523,18 @@ const ExpertSearch = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            전문가 찾기 🔍
-          </h1>
-          <p className="text-gray-600">
-            다양한 분야의 전문가들을 찾아 상담받아보세요
-          </p>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-gray-900">
+                  전문가 찾기
+                </h1>
+                <p className="text-gray-600 mt-2">
+                  다양한 분야의 전문가들을 찾아 상담받아보세요
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 검색 및 필터 바 */}

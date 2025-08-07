@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CreditCard } from "lucide-react";
 import PackCard from "../components/dashboard/PackCard";
 import CreditBalance from "../components/dashboard/CreditBalance";
 
@@ -86,12 +87,22 @@ const CreditPackages = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">크레딧 충전 💳</h1>
-          <p className="mt-2 text-gray-600">
-            상담에 필요한 크레딧을 충전하세요. 충전량이 많을수록 더 많은 보너스
-            혜택을 받을 수 있습니다.
-          </p>
-          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-gray-900">
+                  크레딧 충전
+                </h1>
+                <p className="text-gray-600 mt-2">
+                  상담에 필요한 크레딧을 충전하세요. 충전량이 많을수록 더 많은
+                  보너스 혜택을 받을 수 있습니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mb-8">
+          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
               💡 <strong>사용 시간 기준:</strong> 평균 분당 ₩1,800 (상담사별로
               요금이 다를 수 있습니다)

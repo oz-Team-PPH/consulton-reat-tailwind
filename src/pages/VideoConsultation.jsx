@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Mic,
   MicOff,
@@ -7,7 +7,7 @@ import {
   Monitor,
   MonitorOff,
   Phone,
-  Settings,
+  Paperclip,
   Users,
   MessageCircle,
   Clock,
@@ -15,6 +15,7 @@ import {
   Send,
   Maximize2,
   Volume2,
+  X,
 } from "lucide-react";
 
 const VideoConsultation = () => {
@@ -39,6 +40,9 @@ const VideoConsultation = () => {
   const [showVideoGrid, setShowVideoGrid] = useState(true);
   const [newChatMessage, setNewChatMessage] = useState("");
 
+  // 채팅 스크롤 참조
+  const chatMessagesEndRef = useRef(null);
+
   // 상담 시작 관련 상태
   const [isConsultationStarted, setIsConsultationStarted] = useState(false);
   const [expertJoined, setExpertJoined] = useState(false);
@@ -52,55 +56,14 @@ const VideoConsultation = () => {
   const [mediaPermissionGranted, setMediaPermissionGranted] = useState(false);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   const [permissionError, setPermissionError] = useState("");
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [screenShareStream, setScreenShareStream] = useState(null);
+  const [showMediaUploadModal, setShowMediaUploadModal] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   useEffect(() => {
     // 컴포넌트 로딩 시 즉시 미디어 권한 요청
     requestMediaPermissions();
-
-    // 더미 채팅 메시지
-    setChatMessages([
-      {
-        id: 1,
-        sender: "이민수 전문가",
-        message: "안녕하세요! 화면과 음성이 잘 들리시나요?",
-        timestamp: new Date(Date.now() - 300000),
-        isExpert: true,
-        type: "chat",
-      },
-      {
-        id: 2,
-        sender: "김철수",
-        message: "네, 잘 들립니다!",
-        timestamp: new Date(Date.now() - 280000),
-        isExpert: false,
-        type: "chat",
-      },
-      {
-        id: 3,
-        sender: "이민수 전문가",
-        message: "좋습니다! 오늘 상담받고 싶은 주제가 무엇인가요?",
-        timestamp: new Date(Date.now() - 260000),
-        isExpert: true,
-        type: "chat",
-      },
-      {
-        id: 4,
-        sender: "김철수",
-        message: "마케팅 전략에 대해 상담받고 싶습니다.",
-        timestamp: new Date(Date.now() - 240000),
-        isExpert: false,
-        type: "chat",
-      },
-      {
-        id: 5,
-        sender: "이민수 전문가",
-        message:
-          "좋습니다! 현재 어떤 사업을 하고 계신지, 그리고 주요 타겟 고객층이 누구인지 먼저 알려주시겠어요?",
-        timestamp: new Date(Date.now() - 220000),
-        isExpert: true,
-        type: "chat",
-      },
-    ]);
 
     // 데모용으로 3초 후 사용자 입장, 1초 후 전문가 입장으로 설정
     setTimeout(() => setUserJoined(true), 1000);
@@ -190,6 +153,16 @@ const VideoConsultation = () => {
       setChatMessages((prev) => [...prev, startMessage]);
     }
   }, [expertConfirmed, userConfirmed, isConsultationStarted]);
+
+  // 채팅 메시지가 업데이트될 때마다 스크롤을 맨 아래로 이동
+  useEffect(() => {
+    if (chatMessagesEndRef.current) {
+      chatMessagesEndRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
+  }, [chatMessages]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -289,31 +262,86 @@ const VideoConsultation = () => {
     setPermissionError("");
 
     try {
+      // 먼저 권한 상태 확인
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("MediaDevices API not supported");
+      }
+
+      console.log("미디어 권한 요청 시작...");
+
       // 마이크와 카메라 권한 요청
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
       });
 
+      console.log("미디어 권한 허용됨:", stream);
+
       // 권한이 허용되면 스트림을 정리 (실제 사용은 나중에)
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach((track) => {
+        console.log(`${track.kind} track stopped:`, track.label);
+        track.stop();
+      });
 
       setMediaPermissionGranted(true);
       setIsRequestingPermission(false);
+      setShowSuccessMessage(true);
+
+      console.log("미디어 권한 설정 완료");
+
+      // 2초 후 성공 메시지 숨기기
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 2000);
     } catch (error) {
+      console.error("미디어 권한 요청 실패:", error);
       setIsRequestingPermission(false);
 
-      if (error.name === "NotAllowedError") {
+      if (
+        error.name === "NotAllowedError" ||
+        error.name === "PermissionDeniedError"
+      ) {
         setPermissionError(
-          "마이크와 카메라 권한이 거부되었습니다. 브라우저 설정에서 권한을 허용해주세요."
+          "마이크와 카메라 권한이 거부되었습니다. 브라우저 주소창 옆의 카메라/마이크 아이콘을 클릭하여 권한을 허용해주세요."
         );
-      } else if (error.name === "NotFoundError") {
+      } else if (
+        error.name === "NotFoundError" ||
+        error.name === "DevicesNotFoundError"
+      ) {
         setPermissionError(
           "마이크 또는 카메라를 찾을 수 없습니다. 장치가 연결되어 있는지 확인해주세요."
         );
+      } else if (
+        error.name === "NotReadableError" ||
+        error.name === "TrackStartError"
+      ) {
+        setPermissionError(
+          "미디어 장치가 다른 애플리케이션에서 사용 중입니다. 다른 앱을 종료하고 다시 시도해주세요."
+        );
+      } else if (
+        error.name === "OverconstrainedError" ||
+        error.name === "ConstraintNotSatisfiedError"
+      ) {
+        setPermissionError(
+          "요청한 미디어 설정을 지원하지 않습니다. 다시 시도해주세요."
+        );
+      } else if (error.message === "MediaDevices API not supported") {
+        setPermissionError(
+          "이 브라우저에서는 카메라와 마이크를 지원하지 않습니다. 최신 브라우저를 사용해주세요."
+        );
       } else {
         setPermissionError(
-          "미디어 장치에 접근할 수 없습니다. 브라우저를 새로고침하고 다시 시도해주세요."
+          `미디어 장치에 접근할 수 없습니다. (오류: ${
+            error.name || error.message
+          }) 브라우저를 새로고침하고 다시 시도해주세요.`
         );
       }
     }
@@ -335,6 +363,81 @@ const VideoConsultation = () => {
     setNewChatMessage("");
   };
 
+  const handleScreenShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false,
+      });
+      if (stream) {
+        setScreenShareStream(stream);
+        setUserControls((prev) => ({ ...prev, isScreenSharing: true }));
+        stream.getVideoTracks()[0].onended = () => {
+          setScreenShareStream(null);
+          setUserControls((prev) => ({ ...prev, isScreenSharing: false }));
+        };
+      }
+    } catch (error) {
+      console.error("화면 공유 실패:", error);
+      alert("화면 공유를 시작할 수 없습니다.");
+    }
+  };
+
+  const stopScreenShare = () => {
+    if (screenShareStream) {
+      screenShareStream.getTracks().forEach((track) => track.stop());
+      setScreenShareStream(null);
+    }
+    setUserControls((prev) => ({ ...prev, isScreenSharing: false }));
+  };
+
+  const handleFileUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const newFiles = files.map((file) => ({
+      id: Date.now() + Math.random(),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      url: URL.createObjectURL(file),
+      uploadedBy: "김철수",
+      timestamp: new Date(),
+    }));
+
+    setUploadedFiles((prev) => [...prev, ...newFiles]);
+
+    // 채팅 메시지에 파일 업로드 메시지 추가
+    newFiles.forEach((file) => {
+      const fileMessage = {
+        id: Date.now() + Math.random(),
+        sender: "김철수",
+        message: `파일을 업로드했습니다: ${file.name}`,
+        timestamp: new Date(),
+        isExpert: false,
+        type: "file",
+        file: file,
+      };
+      setChatMessages((prev) => [...prev, fileMessage]);
+    });
+
+    setShowMediaUploadModal(false);
+  };
+
+  const handleDownloadFile = (file) => {
+    const link = document.createElement("a");
+    link.href = file.url;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleRemoveFile = (fileId) => {
+    setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId));
+    setChatMessages((prev) =>
+      prev.filter((msg) => !(msg.type === "file" && msg.file?.id === fileId))
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* 미디어 권한 요청 모달 */}
@@ -352,9 +455,37 @@ const VideoConsultation = () => {
                 화상 상담을 위해 마이크와 카메라 사용 권한이 필요합니다.
               </p>
 
+              {showSuccessMessage && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg mb-4">
+                  <p className="text-sm text-green-600 flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    마이크와 카메라 권한이 허용되었습니다!
+                  </p>
+                </div>
+              )}
+
               {permissionError && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
                   <p className="text-sm text-red-600">{permissionError}</p>
+                  <button
+                    onClick={() => {
+                      setPermissionError("");
+                      requestMediaPermissions();
+                    }}
+                    className="mt-2 text-xs text-red-700 hover:text-red-800 underline"
+                  >
+                    다시 시도
+                  </button>
                 </div>
               )}
 
@@ -380,6 +511,55 @@ const VideoConsultation = () => {
               <div className="text-xs text-gray-500 text-center mt-3">
                 브라우저에서 권한 요청이 나타나면 '허용'을 선택해주세요
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 파일 업로드 모달 */}
+      {showMediaUploadModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Paperclip className="w-8 h-8 text-blue-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">
+                파일 업로드
+              </h2>
+              <p className="text-gray-600 mb-6">
+                이미지나 파일을 선택하여 업로드하세요.
+              </p>
+
+              <div className="space-y-4">
+                <label className="block w-full">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,.pdf,.doc,.docx,.txt,.xlsx,.xls"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <div className="w-full py-8 px-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <div className="text-center">
+                      <Paperclip className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">
+                        파일을 선택하거나 여기로 드래그하세요
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        이미지, PDF, 문서 파일 지원
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <button
+                onClick={() => setShowMediaUploadModal(false)}
+                className="mt-4 w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+              >
+                취소
+              </button>
             </div>
           </div>
         </div>
@@ -447,11 +627,11 @@ const VideoConsultation = () => {
       </div>
 
       {/* 메인 콘텐츠 영역 */}
-      <div className="flex-1 flex bg-gray-50 relative">
+      <div className="flex-1 flex bg-gray-50 relative min-h-0">
         {/* 메인 채팅 영역 */}
-        <div className="flex-1 bg-white flex flex-col">
+        <div className="flex-1 bg-white flex flex-col min-h-0">
           {/* 채팅 메시지 영역 */}
-          <div className="flex-1 p-6 overflow-y-auto space-y-4">
+          <div className="flex-1 p-6 overflow-y-auto space-y-4 min-h-0 max-h-[calc(100vh-200px)]">
             {chatMessages.map((message) => (
               <div key={message.id}>
                 {message.type === "system" ? (
@@ -486,6 +666,64 @@ const VideoConsultation = () => {
                       </div>
                     </div>
                   </div>
+                ) : message.type === "file" ? (
+                  <div className="flex justify-start">
+                    <div
+                      className={`max-w-md px-4 py-3 rounded-lg shadow-sm ${
+                        message.isExpert
+                          ? "bg-gradient-to-br from-blue-50 to-blue-100 text-gray-800 border border-blue-200"
+                          : "bg-gradient-to-br from-green-50 to-emerald-100 text-gray-800 border border-green-200"
+                      }`}
+                    >
+                      <div className="text-xs opacity-70 mb-1 font-medium text-left">
+                        {message.sender}
+                      </div>
+                      <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <Paperclip className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {message.file.name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {(message.file.size / 1024 / 1024).toFixed(2)} MB
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDownloadFile(message.file)}
+                          className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          title="다운로드"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                        </button>
+                        {!message.isExpert && (
+                          <button
+                            onClick={() => handleRemoveFile(message.file.id)}
+                            className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                            title="삭제"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="text-xs opacity-60 mt-2 text-left">
+                        {message.timestamp.toLocaleTimeString()}
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex justify-start">
                     <div
@@ -509,10 +747,12 @@ const VideoConsultation = () => {
                 )}
               </div>
             ))}
+            {/* 스크롤 참조점 */}
+            <div ref={chatMessagesEndRef} />
           </div>
 
           {/* 메시지 입력 영역 */}
-          <div className="p-4 border-t border-gray-200 bg-white">
+          <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0">
             <div className="flex space-x-3">
               <input
                 type="text"
@@ -672,6 +912,51 @@ const VideoConsultation = () => {
                 </div>
               </div>
             </div>
+
+            {/* 화면 공유 비디오창 */}
+            {userControls.isScreenSharing && (
+              <div className="relative bg-white rounded-lg overflow-hidden shadow-lg border-2 border-blue-300">
+                <div className="w-full h-32 bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-2 shadow-lg">
+                      <Monitor className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-gray-900 text-sm font-semibold">
+                      화면 공유
+                    </div>
+                    <div className="text-blue-600 text-xs">공유 중</div>
+                  </div>
+                </div>
+
+                {/* 화면 공유 상태 표시 */}
+                <div className="absolute top-2 left-2">
+                  <div className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium">
+                    공유 중
+                  </div>
+                </div>
+
+                {/* 화면 공유 중지 버튼 */}
+                <button
+                  onClick={stopScreenShare}
+                  className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                  title="화면 공유 중지"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -739,12 +1024,13 @@ const VideoConsultation = () => {
 
           {/* 화면 공유 버튼 */}
           <button
-            onClick={() =>
-              setUserControls((prev) => ({
-                ...prev,
-                isScreenSharing: !prev.isScreenSharing,
-              }))
-            }
+            onClick={() => {
+              if (userControls.isScreenSharing) {
+                stopScreenShare();
+              } else {
+                handleScreenShare();
+              }
+            }}
             className={`p-4 rounded-full border transition-colors ${
               userControls.isScreenSharing
                 ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
@@ -785,12 +1071,13 @@ const VideoConsultation = () => {
             />
           </button>
 
-          {/* 설정 버튼 */}
+          {/* 미디어 추가 버튼 */}
           <button
+            onClick={() => setShowMediaUploadModal(true)}
             className="p-4 bg-gray-50 text-gray-700 border border-gray-200 rounded-full hover:bg-gray-100 transition-colors"
-            title="설정"
+            title="파일 업로드"
           >
-            <Settings className="h-6 w-6" />
+            <Paperclip className="h-6 w-6" />
           </button>
         </div>
       </div>

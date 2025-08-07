@@ -88,6 +88,12 @@ const Navbar = ({ onMenuClick, onBackToLanding, onNavigate }) => {
             >
               전문가찾기
             </button>
+            <button
+              onClick={() => onNavigate && onNavigate("community")}
+              className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+            >
+              커뮤니티
+            </button>
           </div>
 
           {/* 프로필 */}

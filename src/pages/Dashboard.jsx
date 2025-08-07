@@ -20,12 +20,27 @@ import {
   Award,
   Phone,
   Mail,
+  Home,
 } from "lucide-react";
 import CreditBalance from "../components/dashboard/CreditBalance";
 import ExpertProfile from "../components/dashboard/ExpertProfile";
+import UserProfile from "../components/dashboard/UserProfile";
 
 const Dashboard = () => {
-  const [user] = useState({ name: "김철수", credits: 150 });
+  const [user, setUser] = useState({
+    name: "김철수",
+    credits: 150,
+    email: "kimcheolsu@example.com",
+    phone: "010-1234-5678",
+    location: "서울특별시 강남구",
+    birthDate: "1990-05-15",
+    interests: ["진로상담", "심리상담", "재무상담"],
+    bio: "다양한 분야의 전문가들과 상담을 통해 성장하고 있습니다. 특히 진로와 심리 분야에 관심이 많습니다.",
+    totalConsultations: 12,
+    favoriteExperts: 5,
+    completedGoals: 3,
+    joinDate: "2024-01-15",
+  });
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [isExpertMode, setIsExpertMode] = useState(false);
@@ -264,6 +279,13 @@ const Dashboard = () => {
     // 여기서 실제 API 호출이나 상태 업데이트를 수행
   };
 
+  // 사용자 프로필 저장 핸들러
+  const handleUserProfileSave = (profileData) => {
+    console.log("사용자 프로필 저장:", profileData);
+    setUser((prev) => ({ ...prev, ...profileData }));
+    // 여기서 실제 API 호출이나 상태 업데이트를 수행
+  };
+
   // 프로필 공개 토글 핸들러
   const handleProfilePublicToggle = () => {
     setExpertProfile((prev) => ({
@@ -444,48 +466,51 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 헤더 */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                안녕하세요, {isExpertMode ? expertProfile.name : user.name}님!
-                👋
-              </h1>
-              <p className="mt-2 text-gray-600">
-                {isExpertMode
-                  ? "브론즈 레벨 진로상담 전문가로 활동 중입니다. 더 많은 경험을 쌓아보세요!"
-                  : "오늘도 전문가와 함께 성장해보세요."}
-              </p>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-gray-900">
+                  안녕하세요, {isExpertMode ? expertProfile.name : user.name}
+                  님!
+                </h1>
+                <p className="text-gray-600 mt-2">
+                  {isExpertMode
+                    ? "브론즈 레벨 진로상담 전문가로 활동 중입니다. 더 많은 경험을 쌓아보세요!"
+                    : "오늘도 전문가와 함께 성장해보세요."}
+                </p>
+              </div>
             </div>
-
-            {/* 모드 토글 버튼 */}
-            <div className="flex items-center space-x-3">
-              <span
-                className={`text-sm font-medium transition-colors ${
-                  !isExpertMode ? "text-blue-600" : "text-gray-500"
-                }`}
-              >
-                사용자 모드
-              </span>
-              <button
-                onClick={() => setIsExpertMode(!isExpertMode)}
-                className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                style={{
-                  backgroundColor: isExpertMode ? "#3B82F6" : "#E5E7EB",
-                }}
-              >
+            <div className="flex-shrink-0 ml-6">
+              {/* 모드 토글 버튼 */}
+              <div className="flex items-center space-x-3">
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    isExpertMode ? "translate-x-6" : "translate-x-1"
+                  className={`text-sm font-medium transition-colors ${
+                    !isExpertMode ? "text-blue-600" : "text-gray-500"
                   }`}
-                />
-              </button>
-              <span
-                className={`text-sm font-medium transition-colors ${
-                  isExpertMode ? "text-blue-600" : "text-gray-500"
-                }`}
-              >
-                전문가 모드
-              </span>
+                >
+                  사용자 모드
+                </span>
+                <button
+                  onClick={() => setIsExpertMode(!isExpertMode)}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  style={{
+                    backgroundColor: isExpertMode ? "#3B82F6" : "#E5E7EB",
+                  }}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isExpertMode ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+                <span
+                  className={`text-sm font-medium transition-colors ${
+                    isExpertMode ? "text-blue-600" : "text-gray-500"
+                  }`}
+                >
+                  전문가 모드
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -566,86 +591,92 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* 전문가 프로필 섹션 (전문가 모드에서만 표시) */}
-        {isExpertMode && (
-          <div className="mb-8">
-            {/* 프로필 공개 설정 */}
-            <div className="bg-white shadow rounded-lg p-6 mb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">
-                    프로필 공개 설정
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    프로필을 공개하면 다른 사용자들이 전문가 검색에서 찾을 수
-                    있습니다.
-                  </p>
-                </div>
-                <div className="flex items-center space-x-3 ml-6">
-                  <span
-                    className={`text-sm font-medium transition-colors ${
-                      !expertProfile.isProfilePublic
-                        ? "text-gray-500"
-                        : "text-gray-400"
-                    }`}
-                  >
-                    비공개
-                  </span>
-                  <button
-                    onClick={handleProfilePublicToggle}
-                    className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    style={{
-                      backgroundColor: expertProfile.isProfilePublic
-                        ? "#3B82F6"
-                        : "#E5E7EB",
-                    }}
-                    aria-label={`프로필 ${
-                      expertProfile.isProfilePublic ? "공개" : "비공개"
-                    } 설정`}
-                  >
+        {/* 프로필 섹션 */}
+        <div className="mb-8">
+          {isExpertMode ? (
+            // 전문가 모드 - 전문가 프로필
+            <>
+              {/* 프로필 공개 설정 */}
+              <div className="bg-white shadow rounded-lg p-6 mb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">
+                      프로필 공개 설정
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      프로필을 공개하면 다른 사용자들이 전문가 검색에서 찾을 수
+                      있습니다.
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-3 ml-6">
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        expertProfile.isProfilePublic
-                          ? "translate-x-6"
-                          : "translate-x-1"
+                      className={`text-sm font-medium transition-colors ${
+                        !expertProfile.isProfilePublic
+                          ? "text-gray-500"
+                          : "text-gray-400"
                       }`}
-                    />
-                  </button>
-                  <span
-                    className={`text-sm font-medium transition-colors ${
-                      expertProfile.isProfilePublic
-                        ? "text-blue-600"
-                        : "text-gray-400"
-                    }`}
-                  >
-                    공개
-                  </span>
-                </div>
-              </div>
-              {expertProfile.isProfilePublic && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-2" />
-                    <div>
-                      <p className="text-sm font-medium text-blue-900">
-                        프로필이 공개되었습니다!
-                      </p>
-                      <p className="text-sm text-blue-700 mt-1">
-                        이제 다른 사용자들이 전문가 검색에서 회원님의 프로필을
-                        찾을 수 있습니다.
-                      </p>
-                    </div>
+                    >
+                      비공개
+                    </span>
+                    <button
+                      onClick={handleProfilePublicToggle}
+                      className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      style={{
+                        backgroundColor: expertProfile.isProfilePublic
+                          ? "#3B82F6"
+                          : "#E5E7EB",
+                      }}
+                      aria-label={`프로필 ${
+                        expertProfile.isProfilePublic ? "공개" : "비공개"
+                      } 설정`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          expertProfile.isProfilePublic
+                            ? "translate-x-6"
+                            : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                    <span
+                      className={`text-sm font-medium transition-colors ${
+                        expertProfile.isProfilePublic
+                          ? "text-blue-600"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      공개
+                    </span>
                   </div>
                 </div>
-              )}
-            </div>
+                {expertProfile.isProfilePublic && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <div className="flex items-start">
+                      <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-2" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-900">
+                          프로필이 공개되었습니다!
+                        </p>
+                        <p className="text-sm text-blue-700 mt-1">
+                          이제 다른 사용자들이 전문가 검색에서 회원님의 프로필을
+                          찾을 수 있습니다.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            <ExpertProfile
-              expertData={expertProfile}
-              onSave={handleExpertProfileSave}
-            />
-          </div>
-        )}
+              <ExpertProfile
+                expertData={expertProfile}
+                onSave={handleExpertProfileSave}
+              />
+            </>
+          ) : (
+            // 사용자 모드 - 사용자 프로필
+            <UserProfile userData={user} onSave={handleUserProfileSave} />
+          )}
+        </div>
 
         {/* 상담 일정 섹션 */}
         <div className="bg-white shadow rounded-lg mb-8">

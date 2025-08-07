@@ -24,13 +24,6 @@ const Sidebar = ({ isOpen, onClose }) => {
   const menuItems = useMemo(
     () => [
       {
-        id: "dashboard",
-        name: "대시보드",
-        icon: Home,
-        path: "/dashboard",
-        description: "전체 현황 보기",
-      },
-      {
         id: "experts",
         name: "전문가 찾기",
         icon: Users,
@@ -73,18 +66,18 @@ const Sidebar = ({ isOpen, onClose }) => {
   const settingsItems = useMemo(
     () => [
       {
+        id: "dashboard",
+        name: "대시보드",
+        icon: Home,
+        path: "/dashboard",
+        description: "전체 현황 보기",
+      },
+      {
         id: "notifications",
         name: "알림 설정",
         icon: Bell,
         path: "/notifications",
         description: "알림 관리",
-      },
-      {
-        id: "profile",
-        name: "프로필",
-        icon: User,
-        path: "/profile",
-        description: "계정 정보",
       },
       {
         id: "billing",
