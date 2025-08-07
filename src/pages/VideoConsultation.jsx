@@ -565,10 +565,20 @@ const VideoConsultation = () => {
         </div>
       )}
 
+      {/* 헤드라인 섹션 */}
+      <div className="bg-gray-50 py-12 text-center">
+        <div className="max-w-4xl mx-auto px-6">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">화상 상담</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            전문가와 실시간 화상 상담을 통해 더욱 효과적인 컨설팅을 경험하세요
+          </p>
+        </div>
+      </div>
+
       {/* 상단 헤더 */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-gray-900">화상 상담</h1>
+          <h2 className="text-xl font-bold text-gray-900">상담 세션</h2>
           <div className="flex items-center space-x-2 bg-green-50 border border-green-200 text-green-700 px-3 py-1 rounded-full text-sm">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="font-medium">연결됨</span>
@@ -631,7 +641,7 @@ const VideoConsultation = () => {
         {/* 메인 채팅 영역 */}
         <div className="flex-1 bg-white flex flex-col min-h-0">
           {/* 채팅 메시지 영역 */}
-          <div className="flex-1 p-6 overflow-y-auto space-y-4 min-h-0 max-h-[calc(100vh-200px)]">
+          <div className="flex-1 p-6 overflow-y-auto space-y-4 min-h-0 max-h-[calc(100vh-300px)]">
             {chatMessages.map((message) => (
               <div key={message.id}>
                 {message.type === "system" ? (

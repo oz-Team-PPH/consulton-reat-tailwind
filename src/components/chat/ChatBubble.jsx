@@ -68,7 +68,7 @@ const ChatBubble = ({ message }) => {
         {!isUser && (
           <div className="flex-shrink-0">
             {isAI ? (
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
+              <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-sm">
                 <Bot className="text-white w-4 h-4" />
               </div>
             ) : message.expertInfo?.avatar ? (
@@ -101,7 +101,7 @@ const ChatBubble = ({ message }) => {
                       AI 어시스턴트
                     </span>
                   </div>
-                  <span className="text-xs text-blue-600">컨설트온 AI</span>
+                  <span className="text-xs text-cyan-600">컨설트온 AI</span>
                 </>
               ) : (
                 message.expertInfo && (
@@ -128,7 +128,7 @@ const ChatBubble = ({ message }) => {
                 isUser
                   ? "bg-blue-600 text-white"
                   : isAI
-                  ? "bg-gradient-to-r from-blue-50 to-purple-50 text-gray-900 border border-blue-200"
+                  ? "bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 text-gray-900 border border-cyan-200"
                   : "bg-white text-gray-900 border border-gray-200"
               }`}
             >

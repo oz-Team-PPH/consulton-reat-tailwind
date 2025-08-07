@@ -55,7 +55,7 @@ const LandingPage = ({ onEnterService }) => {
                 className={`pointer-events-none inline-block transform rounded-full bg-white shadow ring-0 h-12 w-12 relative z-10 transition-transform duration-500 ${
                   isToggleOn ? "translate-x-14" : "translate-x-1"
                 }`}
-                style={{ marginTop: "5px" }}
+                style={{ marginTop: "6px" }}
               />
             </div>
           </div>
