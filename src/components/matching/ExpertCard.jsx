@@ -44,61 +44,63 @@ const ExpertCard = ({
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
 
-  // 가용성 아이콘 컴포넌트 메모화
-  const getAvailabilityIcon = useCallback((availability) => {
-    switch (availability) {
-      case "available":
-        return (
-          <CheckCircle
-            className="h-4 w-4 text-green-500"
-            aria-label="상담 가능"
-          />
-        );
-      case "busy":
-        return (
-          <AlertCircle
-            className="h-4 w-4 text-yellow-500"
-            aria-label="상담 중"
-          />
-        );
-      case "offline":
-        return (
-          <XCircle className="h-4 w-4 text-red-500" aria-label="오프라인" />
-        );
-      default:
-        return (
-          <XCircle
-            className="h-4 w-4 text-gray-400"
-            aria-label="상태 알 수 없음"
-          />
-        );
+  // 답변 시간 텍스트 변환 함수
+  const getResponseTimeText = useCallback((responseTime) => {
+    if (!responseTime) return "답변 시간 정보 없음";
+    
+    if (typeof responseTime === 'string') {
+      return responseTime;
     }
+    
+    if (typeof responseTime === 'number') {
+      if (responseTime < 60) {
+        return `${responseTime}분 내`;
+      } else if (responseTime < 1440) { // 24시간 = 1440분
+        const hours = Math.floor(responseTime / 60);
+        return `${hours}시간 내`;
+      } else {
+        const days = Math.floor(responseTime / 1440);
+        return `${days}일 내`;
+      }
+    }
+    
+    return "답변 시간 정보 없음";
   }, []);
 
-  const getAvailabilityText = useCallback((availability) => {
-    switch (availability) {
-      case "available":
-        return "상담 가능";
-      case "busy":
-        return "상담 중";
-      case "offline":
-        return "오프라인";
-      default:
-        return "알 수 없음";
+  // 답변 시간 아이콘 컴포넌트
+  const getResponseTimeIcon = useCallback((responseTime) => {
+    if (!responseTime) {
+      return <Clock className="h-4 w-4 text-gray-400" aria-label="답변 시간 정보 없음" />;
     }
+    
+    if (typeof responseTime === 'number') {
+      if (responseTime < 60) {
+        return <Clock className="h-4 w-4 text-green-500" aria-label="빠른 답변" />;
+      } else if (responseTime < 1440) {
+        return <Clock className="h-4 w-4 text-yellow-500" aria-label="보통 답변" />;
+      } else {
+        return <Clock className="h-4 w-4 text-red-500" aria-label="느린 답변" />;
+      }
+    }
+    
+    return <Clock className="h-4 w-4 text-gray-400" aria-label="답변 시간" />;
   }, []);
 
-  const getAvailabilityColor = useCallback((availability) => {
-    switch (availability) {
-      case "available":
+  // 답변 시간 색상 클래스
+  const getResponseTimeColor = useCallback((responseTime) => {
+    if (!responseTime) return "text-gray-600 bg-gray-50";
+    
+    if (typeof responseTime === 'number') {
+      if (responseTime < 60) {
         return "text-green-600 bg-green-50";
-      case "busy":
+      } else if (responseTime < 1440) {
         return "text-yellow-600 bg-yellow-50";
-      case "offline":
+      } else {
         return "text-red-600 bg-red-50";
-      default:
-        return "text-gray-600 bg-gray-50";
+      }
     }
+    
+    return "text-gray-600 bg-gray-50";
   }, []);
 
   // 계산된 값들 메모화
@@ -108,10 +110,11 @@ const ExpertCard = ({
       name: expert.name || "이름 없음",
       rating: expert.rating || 0,
       reviewCount: expert.reviewCount || 0,
-      availability: expert.availability || "offline",
+      responseTime: expert.responseTime || null,
       specialties: expert.specialties || [],
       totalSessions: expert.totalSessions || 0,
       avgRating: expert.avgRating || expert.rating || 0,
+      level: expert.level || 1, // 레벨 정보 추가
       ...expert,
     };
 
@@ -123,6 +126,11 @@ const ExpertCard = ({
     const levelBadgeStyles = getLevelBadgeStyles(expertLevel.name);
     const creditsPerMinute = calculateCreditsPerMinute(safeExpert);
 
+    // 카드 사이즈에 맞게 태그 개수 결정
+    const maxTags = viewMode === "list" ? 1 : 3;
+    const displaySpecialties = safeExpert.specialties.slice(0, maxTags);
+    const remainingSpecialtiesCount = Math.max(0, safeExpert.specialties.length - maxTags);
+
     return {
       ...safeExpert,
       expertLevel,
@@ -130,14 +138,8 @@ const ExpertCard = ({
       creditsPerMinute,
       isTopRated: safeExpert.rating >= 4.8 && safeExpert.reviewCount >= 100,
       isListView: viewMode === "list",
-      displaySpecialties: safeExpert.specialties.slice(
-        0,
-        viewMode === "list" ? 2 : 3
-      ),
-      remainingSpecialtiesCount: Math.max(
-        0,
-        safeExpert.specialties.length - (viewMode === "list" ? 2 : 3)
-      ),
+      displaySpecialties,
+      remainingSpecialtiesCount,
     };
   }, [expert, viewMode]);
 
@@ -161,7 +163,7 @@ const ExpertCard = ({
 
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-blue-200 overflow-hidden ${
+      className={`bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-blue-200 overflow-hidden ${
         isHovered ? "transform -translate-y-1" : ""
       } ${expertInfo.isListView ? "flex items-center p-4" : "p-6"} relative`}
       onMouseEnter={handleMouseEnter}
@@ -172,7 +174,7 @@ const ExpertCard = ({
       {/* 상단 배지 */}
       {expertInfo.isTopRated && !expertInfo.isListView && (
         <div
-          className="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-bl-lg text-xs font-medium flex items-center space-x-1"
+          className="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-bl-xl text-xs font-medium flex items-center space-x-1"
           aria-label="최고 평점 전문가"
         >
           <Crown className="h-3 w-3" />
@@ -190,15 +192,15 @@ const ExpertCard = ({
           className={`${
             expertInfo.isListView
               ? "flex items-center space-x-4"
-              : "flex items-center space-x-4 mb-4"
+              : "flex items-start space-x-4 mb-5"
           }`}
         >
           {/* 아바타 */}
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             <div
               className={`${
-                expertInfo.isListView ? "w-16 h-16" : "w-20 h-20"
-              } bg-gray-300 rounded-full flex items-center justify-center overflow-hidden`}
+                expertInfo.isListView ? "w-20 h-20" : "w-24 h-24"
+              } bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-gray-100`}
             >
               {expertInfo.avatar ? (
                 <img
@@ -212,31 +214,17 @@ const ExpertCard = ({
                 />
               ) : null}
               <User
-                className="w-8 h-8 text-gray-600"
+                className="w-10 h-10 text-gray-400"
                 style={{ display: expertInfo.avatar ? "none" : "block" }}
               />
             </div>
-
-            {/* 상태 표시 */}
-            <div
-              className={`absolute -bottom-1 -right-1 ${
-                expertInfo.isListView ? "w-5 h-5" : "w-6 h-6"
-              } rounded-full border-2 border-white ${
-                expertInfo.availability === "available"
-                  ? "bg-green-500"
-                  : expertInfo.availability === "busy"
-                  ? "bg-yellow-500"
-                  : "bg-red-500"
-              }`}
-              aria-label={getAvailabilityText(expertInfo.availability)}
-            ></div>
           </div>
 
           {/* 기본 정보 */}
-          <div className="flex-1">
-            <div className="flex items-center space-x-2 mb-1">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2 mb-2">
               <h3
-                className={`font-bold text-gray-900 ${
+                className={`font-bold text-gray-900 truncate ${
                   expertInfo.isListView ? "text-lg" : "text-xl"
                 }`}
               >
@@ -244,18 +232,17 @@ const ExpertCard = ({
               </h3>
               {/* 레벨 배지 */}
               <div
-                className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${expertInfo.levelBadgeStyles.background} ${expertInfo.levelBadgeStyles.textColor}`}
+                className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700`}
               >
-                <span>{expertInfo.levelBadgeStyles.icon}</span>
-                <span>{getKoreanLevelName(expertInfo.expertLevel.name)}</span>
+                <span>Lv.{expertInfo.expertLevel.level}</span>
               </div>
               {expertInfo.isTopRated && (
                 <Crown className="h-4 w-4 text-yellow-500" />
               )}
             </div>
             <p
-              className={`text-gray-600 ${
-                expertInfo.isListView ? "text-sm" : ""
+              className={`text-gray-600 font-medium ${
+                expertInfo.isListView ? "text-sm" : "text-base"
               }`}
             >
               {expertInfo.title || expert.title}
@@ -265,7 +252,7 @@ const ExpertCard = ({
             <div className="flex items-center space-x-4 mt-2">
               <div className="flex items-center space-x-1">
                 <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-semibold text-gray-900">
                   {expertInfo.rating}
                 </span>
                 <span className="text-sm text-gray-500">
@@ -276,84 +263,75 @@ const ExpertCard = ({
               {!expertInfo.isListView && (
                 <div className="flex items-center space-x-1 text-sm text-gray-500">
                   <MapPin className="h-3 w-3" />
-                  <span>{expertInfo.location || expert.location}</span>
+                  <span className="truncate">{expertInfo.location || expert.location}</span>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* 상세 정보 */}
-        <div
-          className={`${
-            expertInfo.isListView
-              ? "flex-1 grid grid-cols-2 gap-4"
-              : "space-y-4"
-          }`}
-        >
-          {/* 전문 분야 */}
-          <div className={expertInfo.isListView ? "" : "mb-4"}>
-            <h4 className="text-sm font-medium text-gray-900 mb-2">
-              전문 분야
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {expertInfo.displaySpecialties.map((specialty, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                >
-                  {specialty}
-                </span>
-              ))}
-              {expertInfo.remainingSpecialtiesCount > 0 && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                  +{expertInfo.remainingSpecialtiesCount}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* 상담 정보 */}
-          <div
-            className={`grid ${
-              expertInfo.isListView ? "grid-cols-1" : "grid-cols-2"
-            } gap-4 text-sm`}
-          >
-            <div className="flex items-center space-x-2 text-gray-600">
-              <Clock className="h-4 w-4" />
-              <span>{expertInfo.responseTime || expert.responseTime}</span>
-            </div>
-
-            <div className="flex items-center space-x-2 text-gray-600">
-              <MessageCircle className="h-4 w-4" />
-              <span>
-                {expertInfo.consultationCount || expert.consultationCount}회
-                상담
+        {/* 전문 분야 */}
+        <div className={`${expertInfo.isListView ? "flex-1" : "mb-4"}`}>
+          <h4 className="text-sm font-semibold text-gray-900 mb-2">
+            전문 분야
+          </h4>
+          <div className="flex gap-1.5 overflow-hidden">
+            {expertInfo.displaySpecialties.map((specialty, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 flex-shrink-0"
+              >
+                {specialty}
               </span>
-            </div>
-
-            {!expertInfo.isListView && (
-              <>
-                <div className="flex items-center space-x-2 text-gray-600">
-                  <Calendar className="h-4 w-4" />
-                  <span>{expertInfo.experience || expert.experience} 경력</span>
-                </div>
-
-                <div className="flex items-center space-x-2 text-gray-600">
-                  <MapPin className="h-4 w-4" />
-                  <span>{expertInfo.location || expert.location}</span>
-                </div>
-              </>
+            ))}
+            {expertInfo.remainingSpecialtiesCount > 0 && (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-600 border border-gray-100 flex-shrink-0">
+                +{expertInfo.remainingSpecialtiesCount}
+              </span>
             )}
           </div>
+        </div>
 
-          {/* 설명 */}
+        {/* 상담 정보 */}
+        <div
+          className={`grid ${
+            expertInfo.isListView ? "grid-cols-1" : "grid-cols-2"
+          } gap-3 text-sm mb-4`}
+        >
+          <div className="flex items-center space-x-2 text-gray-600">
+            <Calendar className="h-4 w-4" />
+            <span>{expertInfo.experience || expert.experience}년 경력</span>
+          </div>
+
+          <div className="flex items-center space-x-2 text-gray-600">
+            <MessageCircle className="h-4 w-4" />
+            <span>
+              {expertInfo.consultationCount || expert.consultationCount}회
+              상담
+            </span>
+          </div>
+
           {!expertInfo.isListView && (
-            <p className="text-sm text-gray-600 line-clamp-2">
-              {expertInfo.description || expert.description}
-            </p>
+            <>
+              <div className="flex items-center space-x-2 text-gray-600">
+                <Clock className="h-4 w-4" />
+                <span>{expertInfo.responseTime || expert.responseTime}</span>
+              </div>
+
+              <div className="flex items-center space-x-2 text-gray-600">
+                <MapPin className="h-4 w-4" />
+                <span className="truncate">{expertInfo.location || expert.location}</span>
+              </div>
+            </>
           )}
         </div>
+
+        {/* 설명 */}
+        {!expertInfo.isListView && (
+          <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+            {expertInfo.description || expert.description}
+          </p>
+        )}
 
         {/* 하단 섹션 */}
         <div
@@ -379,22 +357,22 @@ const ExpertCard = ({
             <span className="text-sm text-gray-500">/분</span>
           </div>
 
-          {/* 상태 및 버튼 */}
+          {/* 답변 시간 및 버튼 */}
           <div className="flex items-center space-x-3">
-            {/* 상태 표시 */}
+            {/* 답변 시간 표시 */}
             <div
-              className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${getAvailabilityColor(
-                expertInfo.availability
+              className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium ${getResponseTimeColor(
+                expertInfo.responseTime
               )}`}
             >
-              {getAvailabilityIcon(expertInfo.availability)}
-              <span>{getAvailabilityText(expertInfo.availability)}</span>
+              {getResponseTimeIcon(expertInfo.responseTime)}
+              <span>{getResponseTimeText(expertInfo.responseTime)}</span>
             </div>
 
             {/* 프로필 보기 버튼 */}
             <button
               onClick={handleProfileView}
-              className="px-4 py-2 rounded-lg font-medium transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+              className="px-4 py-2 rounded-lg font-medium transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm"
               aria-label={`${expertInfo.name} 전문가 프로필 보기`}
             >
               프로필 보기
@@ -405,7 +383,7 @@ const ExpertCard = ({
 
       {/* 호버 효과 */}
       {isHovered && !expertInfo.isListView && (
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-30 pointer-events-none rounded-lg" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-20 pointer-events-none rounded-xl" />
       )}
     </div>
   );

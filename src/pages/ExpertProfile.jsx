@@ -142,28 +142,21 @@ const ExpertProfile = () => {
     setIsStartingConsultation(true);
 
     try {
-      // 상담 시작/예약 API 호출 시뮬레이션
+      // 상담 시작 API 호출 시뮬레이션
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      if (expert.availability === "available") {
-        // 즉시 상담 시작
-        navigate("/video-consultation", {
-          state: {
-            expert: expert,
-            consultationType: consultationType,
-            estimatedDuration: estimatedDuration,
-            consultationSummary: location.state?.consultationSummary,
-            consultationTopic: location.state?.consultationTopic,
-          },
-        });
-      } else {
-        // 상담 예약 처리
-        alert(
-          "상담이 성공적으로 예약되었습니다. 전문가가 확인 후 연락드리겠습니다."
-        );
-      }
+      // 상담 시작
+      navigate("/video-consultation", {
+        state: {
+          expert: expert,
+          consultationType: consultationType,
+          estimatedDuration: estimatedDuration,
+          consultationSummary: location.state?.consultationSummary,
+          consultationTopic: location.state?.consultationTopic,
+        },
+      });
     } catch (error) {
-      console.error("상담 시작/예약 실패:", error);
+      console.error("상담 시작 실패:", error);
       alert("상담을 시작할 수 없습니다. 다시 시도해주세요.");
     } finally {
       setIsStartingConsultation(false);
@@ -203,49 +196,74 @@ const ExpertProfile = () => {
     );
   }
 
-  // 전문가 레벨 정보 계산
-  const expertLevel = calculateExpertLevel(
-    expert.totalSessions || 0,
-    expert.avgRating || expert.rating || 0
-  );
+  // 전문가 레벨 정보 (직접 설정된 레벨 사용)
+  const expertLevel = {
+    level: expert.level || 1,
+    name: "expert"
+  };
   const levelBadgeStyles = getLevelBadgeStyles(expertLevel.name);
-  const creditsPerMinute = calculateCreditsPerMinute(expert);
+  const creditsPerMinute = calculateCreditsPerMinute({
+    ...expert,
+    level: expert.level || 1 // 직접 설정된 레벨 사용
+  });
 
-  // 가용성 상태 아이콘
-  const getAvailabilityIcon = (availability) => {
-    switch (availability) {
-      case "available":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case "busy":
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
-      case "offline":
-      default:
-        return <XCircle className="h-5 w-5 text-red-500" />;
+  // 답변 시간 텍스트 변환 함수
+  const getResponseTimeText = (responseTime) => {
+    if (!responseTime) return "답변 시간 정보 없음";
+    
+    if (typeof responseTime === 'string') {
+      return responseTime;
     }
+    
+    if (typeof responseTime === 'number') {
+      if (responseTime < 60) {
+        return `${responseTime}분 내`;
+      } else if (responseTime < 1440) { // 24시간 = 1440분
+        const hours = Math.floor(responseTime / 60);
+        return `${hours}시간 내`;
+      } else {
+        const days = Math.floor(responseTime / 1440);
+        return `${days}일 내`;
+      }
+    }
+    
+    return "답변 시간 정보 없음";
   };
 
-  const getAvailabilityText = (availability) => {
-    switch (availability) {
-      case "available":
-        return "상담 가능";
-      case "busy":
-        return "상담 중";
-      case "offline":
-      default:
-        return "오프라인";
+  // 답변 시간 아이콘 컴포넌트
+  const getResponseTimeIcon = (responseTime) => {
+    if (!responseTime) {
+      return <Clock className="h-5 w-5 text-gray-400" />;
     }
+    
+    if (typeof responseTime === 'number') {
+      if (responseTime < 60) {
+        return <Clock className="h-5 w-5 text-green-500" />;
+      } else if (responseTime < 1440) {
+        return <Clock className="h-5 w-5 text-yellow-500" />;
+      } else {
+        return <Clock className="h-5 w-5 text-red-500" />;
+      }
+    }
+    
+    return <Clock className="h-5 w-5 text-gray-400" />;
   };
 
-  const getAvailabilityColor = (availability) => {
-    switch (availability) {
-      case "available":
+  // 답변 시간 색상 클래스
+  const getResponseTimeColor = (responseTime) => {
+    if (!responseTime) return "text-gray-600 bg-gray-50 border-gray-200";
+    
+    if (typeof responseTime === 'number') {
+      if (responseTime < 60) {
         return "text-green-600 bg-green-50 border-green-200";
-      case "busy":
+      } else if (responseTime < 1440) {
         return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "offline":
-      default:
+      } else {
         return "text-red-600 bg-red-50 border-red-200";
+      }
     }
+    
+    return "text-gray-600 bg-gray-50 border-gray-200";
   };
 
   return (
@@ -264,22 +282,34 @@ const ExpertProfile = () => {
 
         {/* 전문가 기본 정보 카드 */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
-          {/* TOP 배지 */}
-          {expert.rating >= 4.8 && expert.reviewCount >= 100 && (
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 text-center">
-              <div className="flex items-center justify-center space-x-1">
-                <Crown className="h-4 w-4" />
-                <span className="font-medium text-sm">TOP RATED EXPERT</span>
-              </div>
+          {/* 레벨 배지 */}
+          <div className={`text-white px-4 py-2 text-center ${
+            expert.level >= 800 ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
+            expert.level >= 600 ? 'bg-gradient-to-r from-red-500 to-red-600' :
+            expert.level >= 400 ? 'bg-gradient-to-r from-orange-500 to-orange-600' :
+            expert.level >= 200 ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' :
+            expert.level >= 100 ? 'bg-gradient-to-r from-green-500 to-green-600' :
+            'bg-gradient-to-r from-blue-500 to-blue-600'
+          }`}>
+            <div className="flex items-center justify-center space-x-1">
+              <Crown className="h-4 w-4" />
+              <span className="font-medium text-sm">Lv.{expert.level} EXPERT</span>
             </div>
-          )}
+          </div>
 
           <div className="p-8">
             <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
               {/* 프로필 이미지 */}
               <div className="flex-shrink-0 mb-6 md:mb-0">
                 <div className="relative">
-                  <div className="w-32 h-32 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+                  <div className={`w-40 h-40 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden border-4 ${
+                    expert.level >= 800 ? 'border-purple-500' :
+                    expert.level >= 600 ? 'border-red-500' :
+                    expert.level >= 400 ? 'border-orange-500' :
+                    expert.level >= 200 ? 'border-yellow-500' :
+                    expert.level >= 100 ? 'border-green-500' :
+                    'border-blue-500'
+                  }`}>
                     {expert.avatar || expert.profileImage ? (
                       <img
                         src={expert.avatar || expert.profileImage}
@@ -287,20 +317,33 @@ const ExpertProfile = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <User className="w-16 h-16 text-gray-600" />
+                      <User className="w-20 h-20 text-gray-600" />
                     )}
                   </div>
-
-                  {/* 온라인 상태 표시 */}
-                  <div
-                    className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-full border-4 border-white ${
-                      expert.isOnline || expert.availability === "available"
-                        ? "bg-green-500"
-                        : expert.availability === "busy"
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
-                    }`}
-                  />
+                </div>
+                
+                {/* 전문가 이름 */}
+                <div className="text-center mt-4">
+                  <div className="flex items-center justify-center space-x-2">
+                    {expert.rating >= 4.8 && expert.reviewCount >= 100 && (
+                      <Crown className="h-5 w-5 text-yellow-500" />
+                    )}
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      {expert.name}
+                    </h1>
+                  </div>
+                  
+                  {/* 평균 응답시간 */}
+                  <div className="mt-3">
+                    <div
+                      className={`inline-flex items-center space-x-2 px-3 py-2 rounded-lg border text-sm font-medium ${getResponseTimeColor(
+                        expert.responseTime
+                      )}`}
+                    >
+                      {getResponseTimeIcon(expert.responseTime)}
+                      <span>평균 응답시간: {getResponseTimeText(expert.responseTime)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -309,26 +352,12 @@ const ExpertProfile = () => {
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
                   <div className="mb-4 sm:mb-0">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h1 className="text-3xl font-bold text-gray-900">
-                        {expert.name}
-                      </h1>
-
-                      {/* 레벨 배지 */}
-                      <div
-                        className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${levelBadgeStyles.background} ${levelBadgeStyles.textColor}`}
-                      >
-                        <span>{levelBadgeStyles.icon}</span>
-                        <span>{getKoreanLevelName(expertLevel.name)}</span>
-                      </div>
-
-                      {expert.rating >= 4.8 && expert.reviewCount >= 100 && (
-                        <Crown className="h-5 w-5 text-yellow-500" />
-                      )}
+                      <p className="text-2xl text-blue-600 font-semibold">
+                        {expert.specialty}
+                      </p>
                     </div>
 
-                    <p className="text-xl text-blue-600 font-semibold mb-2">
-                      {expert.specialty}
-                    </p>
+
 
                     <div className="flex items-center space-x-4 text-gray-600 mb-4">
                       <div className="flex items-center space-x-1">
@@ -355,23 +384,44 @@ const ExpertProfile = () => {
                       </div>
                     </div>
 
-                    {/* 가용성 상태 */}
-                    <div
-                      className={`inline-flex items-center space-x-2 px-3 py-2 rounded-lg border text-sm font-medium ${getAvailabilityColor(
-                        expert.availability ||
-                          (expert.isOnline ? "available" : "offline")
-                      )}`}
-                    >
-                      {getAvailabilityIcon(
-                        expert.availability ||
-                          (expert.isOnline ? "available" : "offline")
-                      )}
-                      <span>
-                        {getAvailabilityText(
-                          expert.availability ||
-                            (expert.isOnline ? "available" : "offline")
-                        )}
-                      </span>
+                    {/* 전문분야 배지들 */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {(expert.specialties || []).slice(0, 4).map((specialty, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-3 py-2 rounded-lg border text-sm font-medium bg-blue-100 text-blue-700 border-blue-200"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                    
+                    {/* 상담방식 배지들 */}
+                    <div className="flex flex-wrap gap-2">
+                      {(expert.consultationTypes || []).map((type, index) => {
+                        const Icon = type === "video" ? Video : MessageCircle;
+                        return (
+                          <span
+                            key={index}
+                            className="inline-flex items-center space-x-1 px-3 py-2 rounded-lg border text-sm font-medium bg-purple-100 text-purple-700 border-purple-200"
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span>
+                              {type === "video" ? "화상 상담" : "채팅 상담"}
+                            </span>
+                          </span>
+                        );
+                      })}
+                      
+                      {/* 사용 언어 배지들 */}
+                      {(expert.languages || ["한국어"]).map((language, index) => (
+                        <span
+                          key={`lang-${index}`}
+                          className="inline-flex items-center px-3 py-2 rounded-lg border text-sm font-medium bg-gray-100 text-gray-700 border-gray-200"
+                        >
+                          {language}
+                        </span>
+                      ))}
                     </div>
                   </div>
 
@@ -432,22 +482,7 @@ const ExpertProfile = () => {
               </p>
             </div>
 
-            {/* 전문 분야 */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                전문 분야
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {(expert.specialties || []).map((specialty, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
-                  >
-                    {specialty}
-                  </span>
-                ))}
-              </div>
-            </div>
+
 
             {/* 학력 및 자격증 */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -656,6 +691,10 @@ const ExpertProfile = () => {
                         <span className="font-medium">{expert.name}</span>
                       </div>
                       <div className="flex justify-between">
+                        <span className="text-gray-600">전문가 레벨</span>
+                        <span className="font-medium">Lv.{expert.level}</span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-gray-600">상담 방법</span>
                         <span className="font-medium">{selectedType.name}</span>
                       </div>
@@ -669,6 +708,12 @@ const ExpertProfile = () => {
                         <span className="text-gray-600">분당 요금</span>
                         <span className="font-medium">
                           {expert.creditsPerMinute} 크레딧
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">답변 시간</span>
+                        <span className="font-medium">
+                          {getResponseTimeText(expert.responseTime)}
                         </span>
                       </div>
                       <div className="border-t pt-3 flex justify-between">
@@ -698,44 +743,38 @@ const ExpertProfile = () => {
                     </div>
                   </div>
 
-                  {/* 오프라인 상태 안내 */}
-                  {expert.availability !== "available" && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  {/* 답변 시간 안내 */}
+                  {expert.responseTime && expert.responseTime > 60 && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-start">
-                        <Clock className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" />
+                        <Clock className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
                         <div className="text-sm">
-                          <p className="font-medium text-yellow-800 mb-1">
-                            전문가가 현재 오프라인 상태입니다
+                          <p className="font-medium text-blue-800 mb-1">
+                            답변 시간 안내
                           </p>
-                          <p className="text-yellow-700">
-                            상담을 예약하시면 전문가가 온라인 상태가 되었을 때
-                            연락드리겠습니다.
+                          <p className="text-blue-700">
+                            이 전문가는 평균 {getResponseTimeText(expert.responseTime)}에 답변합니다.
+                            급한 문의사항이 있으시면 다른 전문가를 찾아보세요.
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* 상담 시작/예약 버튼 */}
+                  {/* 상담 시작 버튼 */}
                   <button
                     onClick={handleStartConsultation}
                     disabled={!hasEnoughCredits || isStartingConsultation}
                     className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 ${
                       !hasEnoughCredits || isStartingConsultation
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : expert.availability === "available"
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "bg-green-600 text-white hover:bg-green-700"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
                     }`}
                   >
                     {isStartingConsultation ? (
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        <span>
-                          {expert.availability === "available"
-                            ? "상담 준비 중..."
-                            : "예약 처리 중..."}
-                        </span>
+                        <span>상담 준비 중...</span>
                       </>
                     ) : !hasEnoughCredits ? (
                       <>
@@ -745,11 +784,7 @@ const ExpertProfile = () => {
                     ) : (
                       <>
                         <ArrowRight className="h-5 w-5" />
-                        <span>
-                          {expert.availability === "available"
-                            ? "상담 시작하기"
-                            : "상담 예약하기"}
-                        </span>
+                        <span>상담 시작하기</span>
                       </>
                     )}
                   </button>
@@ -769,50 +804,9 @@ const ExpertProfile = () => {
 
           {/* 오른쪽 컬럼 - 부가 정보 */}
           <div className="space-y-6">
-            {/* 상담 방식 */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                상담 방식
-              </h3>
-              <div className="space-y-3">
-                {(expert.consultationTypes || []).map((type) => (
-                  <div key={type} className="flex items-center space-x-3">
-                    {type === "video" && (
-                      <Video className="h-5 w-5 text-blue-600" />
-                    )}
-                    {type === "chat" && (
-                      <MessageCircle className="h-5 w-5 text-green-600" />
-                    )}
-                    {type === "phone" && (
-                      <Phone className="h-5 w-5 text-purple-600" />
-                    )}
-                    <span className="text-gray-700">
-                      {type === "video" && "화상 상담"}
-                      {type === "chat" && "채팅 상담"}
-                      {type === "phone" && "전화 상담"}
-                      {type === "offline" && "오프라인 상담"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            {/* 언어 */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                사용 언어
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {(expert.languages || ["한국어"]).map((language, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-2 py-1 rounded text-sm bg-gray-100 text-gray-700"
-                  >
-                    {language}
-                  </span>
-                ))}
-              </div>
-            </div>
+
+
 
             {/* 연락처 정보 */}
             {expert.contactInfo && (
@@ -856,14 +850,29 @@ const ExpertProfile = () => {
               </div>
             )}
 
-            {/* 상담 가능 시간 */}
+            {/* 답변 시간 정보 */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                상담 가능 시간
+                답변 시간 정보
               </h3>
-              <div className="flex items-center space-x-2 text-gray-700">
-                <Clock className="h-5 w-5 text-gray-400" />
-                <span>{expert.availableTime || "상담 가능 시간 미등록"}</span>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  {getResponseTimeIcon(expert.responseTime)}
+                  <span className="text-gray-700">
+                    평균 응답시간: {getResponseTimeText(expert.responseTime)}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500">
+                  {expert.responseTime && expert.responseTime < 60 ? (
+                    <span className="text-green-600">빠른 답변 전문가</span>
+                  ) : expert.responseTime && expert.responseTime < 1440 ? (
+                    <span className="text-yellow-600">보통 답변 전문가</span>
+                  ) : expert.responseTime ? (
+                    <span className="text-red-600">느린 답변 전문가</span>
+                  ) : (
+                    <span className="text-gray-500">답변 시간 정보 없음</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

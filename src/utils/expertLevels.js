@@ -1,6 +1,7 @@
 /**
  * 전문가 레벨 시스템 유틸리티
  * 레벨 기반 과금 체계 (Lv.1-999)
+ * 1크레딧 = 10원 기준
  */
 
 // 레벨별 과금 체계 정의
@@ -8,7 +9,7 @@ export const LEVELS = [
   {
     name: "Tier 10 (Lv.999)",
     levelRange: { min: 999, max: 999 },
-    creditsPerMinute: 6000, // 6,000원/분 (특별 최고 요금)
+    creditsPerMinute: 600, // 6,000원/분 = 600크레딧/분 (특별 최고 요금)
     color: "from-red-500 to-pink-600",
     bgColor: "bg-gradient-to-r from-red-100 to-pink-100",
     textColor: "text-red-700",
@@ -17,7 +18,7 @@ export const LEVELS = [
   {
     name: "Tier 10 (Lv.900-998)",
     levelRange: { min: 900, max: 998 },
-    creditsPerMinute: 5000, // 5,000원/분 (고정 요금)
+    creditsPerMinute: 500, // 5,000원/분 = 500크레딧/분 (고정 요금)
     color: "from-purple-500 to-indigo-600",
     bgColor: "bg-gradient-to-r from-purple-100 to-indigo-100",
     textColor: "text-purple-700",
@@ -26,7 +27,7 @@ export const LEVELS = [
   {
     name: "Tier 9 (Lv.800-899)",
     levelRange: { min: 800, max: 899 },
-    creditsPerMinute: 5000, // 5,000원/분
+    creditsPerMinute: 500, // 5,000원/분 = 500크레딧/분
     color: "from-indigo-500 to-blue-600",
     bgColor: "bg-gradient-to-r from-indigo-100 to-blue-100",
     textColor: "text-indigo-700",
@@ -35,7 +36,7 @@ export const LEVELS = [
   {
     name: "Tier 8 (Lv.700-799)",
     levelRange: { min: 700, max: 799 },
-    creditsPerMinute: 4500, // 4,500원/분
+    creditsPerMinute: 450, // 4,500원/분 = 450크레딧/분
     color: "from-blue-500 to-cyan-600",
     bgColor: "bg-gradient-to-r from-blue-100 to-cyan-100",
     textColor: "text-blue-700",
@@ -44,7 +45,7 @@ export const LEVELS = [
   {
     name: "Tier 7 (Lv.600-699)",
     levelRange: { min: 600, max: 699 },
-    creditsPerMinute: 4000, // 4,000원/분
+    creditsPerMinute: 400, // 4,000원/분 = 400크레딧/분
     color: "from-cyan-500 to-teal-600",
     bgColor: "bg-gradient-to-r from-cyan-100 to-teal-100",
     textColor: "text-cyan-700",
@@ -53,7 +54,7 @@ export const LEVELS = [
   {
     name: "Tier 6 (Lv.500-599)",
     levelRange: { min: 500, max: 599 },
-    creditsPerMinute: 3500, // 3,500원/분
+    creditsPerMinute: 350, // 3,500원/분 = 350크레딧/분
     color: "from-teal-500 to-green-600",
     bgColor: "bg-gradient-to-r from-teal-100 to-green-100",
     textColor: "text-teal-700",
@@ -62,7 +63,7 @@ export const LEVELS = [
   {
     name: "Tier 5 (Lv.400-499)",
     levelRange: { min: 400, max: 499 },
-    creditsPerMinute: 3000, // 3,000원/분
+    creditsPerMinute: 300, // 3,000원/분 = 300크레딧/분
     color: "from-green-500 to-emerald-600",
     bgColor: "bg-gradient-to-r from-green-100 to-emerald-100",
     textColor: "text-green-700",
@@ -71,7 +72,7 @@ export const LEVELS = [
   {
     name: "Tier 4 (Lv.300-399)",
     levelRange: { min: 300, max: 399 },
-    creditsPerMinute: 2500, // 2,500원/분
+    creditsPerMinute: 250, // 2,500원/분 = 250크레딧/분
     color: "from-emerald-500 to-lime-600",
     bgColor: "bg-gradient-to-r from-emerald-100 to-lime-100",
     textColor: "text-emerald-700",
@@ -80,7 +81,7 @@ export const LEVELS = [
   {
     name: "Tier 3 (Lv.200-299)",
     levelRange: { min: 200, max: 299 },
-    creditsPerMinute: 2000, // 2,000원/분
+    creditsPerMinute: 200, // 2,000원/분 = 200크레딧/분
     color: "from-lime-500 to-yellow-600",
     bgColor: "bg-gradient-to-r from-lime-100 to-yellow-100",
     textColor: "text-lime-700",
@@ -89,7 +90,7 @@ export const LEVELS = [
   {
     name: "Tier 2 (Lv.100-199)",
     levelRange: { min: 100, max: 199 },
-    creditsPerMinute: 1500, // 1,500원/분
+    creditsPerMinute: 150, // 1,500원/분 = 150크레딧/분
     color: "from-yellow-500 to-orange-600",
     bgColor: "bg-gradient-to-r from-yellow-100 to-orange-100",
     textColor: "text-yellow-700",
@@ -98,7 +99,7 @@ export const LEVELS = [
   {
     name: "Tier 1 (Lv.1-99)",
     levelRange: { min: 1, max: 99 },
-    creditsPerMinute: 1000, // 1,000원/분 (최저 요금)
+    creditsPerMinute: 100, // 1,000원/분 = 100크레딧/분 (최저 요금)
     color: "from-orange-500 to-red-600",
     bgColor: "bg-gradient-to-r from-orange-100 to-red-100",
     textColor: "text-orange-700",

@@ -76,18 +76,17 @@ const ExpertSearch = () => {
       reviewCount: 245,
       totalSessions: 245,
       avgRating: 4.9,
-      creditsPerMinute: 3500, // 다이아몬드 레벨, 개별 설정 요금 (35,000원/분)
       description:
         "8년간의 임상 경험을 바탕으로 다양한 심리적 어려움을 겪고 계신 분들에게 도움을 드리고 있습니다.",
       specialties: ["스트레스 관리", "우울증", "불안장애", "관계상담"],
       consultationTypes: ["video", "chat"],
       languages: ["한국어", "영어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 14:00",
+      responseTime: 30, // 30분 내 답변
       education: ["서울대학교 심리학과 학사", "연세대학교 임상심리학 석사"],
       certifications: ["임상심리사 1급", "정신건강임상심리사"],
       totalConsultations: 245,
+      level: 156, // 레벨 직접 설정
     },
     {
       id: 2,
@@ -98,18 +97,17 @@ const ExpertSearch = () => {
       reviewCount: 189,
       totalSessions: 189,
       avgRating: 4.8,
-      creditsPerMinute: 2500, // 플래티넘 레벨, 개별 설정 요금 (25,000원/분)
       description:
         "12년간 다양한 법률 분야에서 활동하며 개인과 기업의 법적 문제 해결에 도움을 드리고 있습니다.",
       specialties: ["계약법", "부동산법", "가족법", "노동법"],
       consultationTypes: ["video", "chat"],
       languages: ["한국어"],
       profileImage: null,
-      isOnline: false,
-      availableTime: "내일 10:00",
+      responseTime: 120, // 2시간 내 답변
       education: ["서울대학교 법학과 학사", "하버드 로스쿨 LL.M."],
       certifications: ["변호사", "공인중개사"],
       totalConsultations: 189,
+      level: 342, // 레벨 직접 설정
     },
     {
       id: 3,
@@ -126,11 +124,11 @@ const ExpertSearch = () => {
       consultationTypes: ["video", "chat"],
       languages: ["한국어", "영어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 16:30",
+      responseTime: 60, // 1시간 내 답변
       education: ["연세대학교 경영학과 학사", "KAIST 금융공학 석사"],
       certifications: ["재무설계사", "투자상담사"],
       totalConsultations: 156,
+      level: 89, // 레벨 직접 설정
     },
     {
       id: 4,
@@ -147,11 +145,11 @@ const ExpertSearch = () => {
       consultationTypes: ["video", "chat"],
       languages: ["한국어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 11:00",
+      responseTime: 45, // 45분 내 답변
       education: ["서울대학교 의학과 학사", "존스홉킨스 공중보건학 석사"],
       certifications: ["의사", "영양사"],
       totalConsultations: 203,
+      level: 567, // 레벨 직접 설정
     },
     {
       id: 5,
@@ -168,11 +166,11 @@ const ExpertSearch = () => {
       consultationTypes: ["video", "chat"],
       languages: ["한국어", "영어"],
       profileImage: null,
-      isOnline: false,
-      availableTime: "내일 09:00",
+      responseTime: 90, // 1시간 30분 내 답변
       education: ["고려대학교 경영학과 학사", "스탠포드 MBA"],
       certifications: ["직업상담사", "진로진학상담사"],
       totalConsultations: 134,
+      level: 234, // 레벨 직접 설정
     },
     {
       id: 6,
@@ -189,11 +187,11 @@ const ExpertSearch = () => {
       consultationTypes: ["video", "chat"],
       languages: ["한국어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 13:30",
+      responseTime: 180, // 3시간 내 답변
       education: ["건국대학교 부동산학과 학사"],
       certifications: ["공인중개사", "부동산투자상담사"],
       totalConsultations: 298,
+      level: 789, // 레벨 직접 설정
     },
     {
       id: 7,
@@ -210,11 +208,11 @@ const ExpertSearch = () => {
       consultationTypes: ["video", "chat"],
       languages: ["한국어", "영어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 15:00",
+      responseTime: 75, // 1시간 15분 내 답변
       education: ["이화여자대학교 교육학과 학사", "서울교육대학교 교육학 석사"],
       certifications: ["교사자격증", "학습코칭전문가"],
       totalConsultations: 167,
+      level: 423, // 레벨 직접 설정
     },
     {
       id: 8,
@@ -231,11 +229,11 @@ const ExpertSearch = () => {
       consultationTypes: ["video", "chat"],
       languages: ["한국어", "영어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 17:00",
+      responseTime: 40, // 40분 내 답변
       education: ["KAIST 컴퓨터공학과 학사", "스탠포드 컴퓨터공학 석사"],
       certifications: ["정보처리기사", "AWS 솔루션 아키텍트"],
       totalConsultations: 223,
+      level: 678, // 레벨 직접 설정
     },
     {
       id: 9,
@@ -244,18 +242,17 @@ const ExpertSearch = () => {
       experience: 5,
       rating: 4.6,
       reviewCount: 89,
-      hourlyRate: 2158, // 기본1800 + 평점(4.6-4.0)*300 + 상담횟수(89/100)*200
       description:
         "5년간 다양한 연령대의 내담자와 함께하며 심리적 안정과 성장을 지원하고 있습니다.",
       specialties: ["아동상담", "청소년상담", "가족치료", "트라우마"],
       consultationTypes: ["video", "chat"],
       languages: ["한국어"],
       profileImage: null,
-      isOnline: false,
-      availableTime: "내일 14:00",
+      responseTime: 150, // 2시간 30분 내 답변
       education: ["숙명여자대학교 심리학과 학사", "연세대학교 상담심리학 석사"],
       certifications: ["상담심리사 2급", "아동상담사"],
       totalConsultations: 89,
+      level: 45, // 레벨 직접 설정
     },
     {
       id: 10,
@@ -264,18 +261,17 @@ const ExpertSearch = () => {
       experience: 14,
       rating: 4.7,
       reviewCount: 312,
-      hourlyRate: 2834, // 기본1800 + 평점(4.7-4.0)*300 + 상담횟수(312/100)*200
       description:
         "14년간 기업법무와 개인 법률 서비스를 제공하며 복잡한 법적 문제를 해결해드리고 있습니다.",
       specialties: ["기업법무", "지적재산권", "계약서검토", "소송"],
       consultationTypes: ["video", "chat"],
       languages: ["한국어", "영어", "중국어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 10:30",
+      responseTime: 240, // 4시간 내 답변
       education: ["서울대학교 법학과 학사", "컬럼비아 로스쿨 LL.M."],
       certifications: ["변호사", "국제변호사"],
       totalConsultations: 312,
+      level: 912, // 레벨 직접 설정
     },
     {
       id: 11,
@@ -284,18 +280,17 @@ const ExpertSearch = () => {
       experience: 8,
       rating: 4.8,
       reviewCount: 198,
-      hourlyRate: 2436, // 기본1800 + 평점(4.8-4.0)*300 + 상담횟수(198/100)*200
       description:
         "8년간 개인 재무설계와 투자 컨설팅을 통해 고객의 경제적 자유를 실현하도록 돕고 있습니다.",
       specialties: ["연금설계", "보험설계", "투자포트폴리오", "세금절약"],
       consultationTypes: ["video", "chat"],
       languages: ["한국어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 12:00",
+      responseTime: 100, // 1시간 40분 내 답변
       education: ["연세대학교 경제학과 학사", "한국금융연수원 수료"],
       certifications: ["재무설계사", "펀드투자상담사"],
       totalConsultations: 198,
+      level: 345, // 레벨 직접 설정
     },
     {
       id: 12,
@@ -304,18 +299,17 @@ const ExpertSearch = () => {
       experience: 13,
       rating: 4.9,
       reviewCount: 276,
-      hourlyRate: 2822, // 기본1800 + 평점(4.9-4.0)*300 + 상담횟수(276/100)*200
       description:
         "13년간 임상 영양사로 활동하며 개인별 맞춤 건강관리와 질병 예방을 위한 상담을 제공합니다.",
       specialties: ["임상영양", "다이어트", "만성질환", "건강검진"],
       consultationTypes: ["video", "chat"],
       languages: ["한국어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 16:00",
+      responseTime: 50, // 50분 내 답변
       education: ["서울대학교 식품영양학과 학사", "연세대학교 보건학 석사"],
       certifications: ["임상영양사", "건강관리사"],
       totalConsultations: 276,
+      level: 756, // 레벨 직접 설정
     },
     {
       id: 13,
@@ -324,18 +318,17 @@ const ExpertSearch = () => {
       experience: 6,
       rating: 4.7,
       reviewCount: 142,
-      hourlyRate: 2294, // 기본1800 + 평점(4.7-4.0)*300 + 상담횟수(142/100)*200
       description:
         "6년간 청소년과 성인의 진로 탐색과 경력 개발을 지원하며 개인의 잠재력을 발견하도록 돕고 있습니다.",
       specialties: ["진로탐색", "적성검사", "면접코칭", "이력서컨설팅"],
       consultationTypes: ["video", "chat"],
       languages: ["한국어", "일본어"],
       profileImage: null,
-      isOnline: false,
-      availableTime: "내일 11:00",
+      responseTime: 120, // 2시간 내 답변
       education: ["고려대학교 심리학과 학사", "한국직업능력개발원 수료"],
       certifications: ["진로상담사", "직업상담사"],
       totalConsultations: 142,
+      level: 123, // 레벨 직접 설정
     },
     {
       id: 14,
@@ -344,18 +337,17 @@ const ExpertSearch = () => {
       experience: 18,
       rating: 4.8,
       reviewCount: 387,
-      hourlyRate: 3014, // 기본1800 + 평점(4.8-4.0)*300 + 상담횟수(387/100)*200
       description:
         "18년간 부동산 시장 분석과 투자 컨설팅을 통해 안정적이고 수익성 높은 부동산 투자를 안내합니다.",
       specialties: ["상업용부동산", "토지투자", "경매", "재개발"],
       consultationTypes: ["video", "chat"],
       languages: ["한국어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 14:30",
+      responseTime: 300, // 5시간 내 답변
       education: ["건국대학교 부동산학과 학사", "부동산대학원 석사"],
       certifications: ["공인중개사", "감정평가사"],
       totalConsultations: 387,
+      level: 987, // 레벨 직접 설정
     },
     {
       id: 15,
@@ -364,21 +356,20 @@ const ExpertSearch = () => {
       experience: 7,
       rating: 4.6,
       reviewCount: 156,
-      hourlyRate: 2292, // 기본1800 + 평점(4.6-4.0)*300 + 상담횟수(156/100)*200
       description:
         "7년간 특수교육과 일반교육 현장에서 다양한 학습자의 개별 요구에 맞는 교육 방법을 제시합니다.",
       specialties: ["특수교육", "학습장애", "영재교육", "교육평가"],
       consultationTypes: ["video", "chat"],
       languages: ["한국어"],
       profileImage: null,
-      isOnline: true,
-      availableTime: "오늘 13:00",
+      responseTime: 80, // 1시간 20분 내 답변
       education: [
         "서울교육대학교 특수교육과 학사",
         "이화여자대학교 교육학 석사",
       ],
       certifications: ["특수교사자격증", "학습치료사"],
       totalConsultations: 156,
+      level: 234, // 레벨 직접 설정
     },
   ];
 
@@ -552,6 +543,46 @@ const ExpertSearch = () => {
       default:
         return type;
     }
+  };
+
+  // 답변 시간 텍스트 변환 함수
+  const getResponseTimeText = (responseTime) => {
+    if (!responseTime) return "답변 시간 정보 없음";
+    
+    if (typeof responseTime === 'string') {
+      return responseTime;
+    }
+    
+    if (typeof responseTime === 'number') {
+      if (responseTime < 60) {
+        return `${responseTime}분 내`;
+      } else if (responseTime < 1440) { // 24시간 = 1440분
+        const hours = Math.floor(responseTime / 60);
+        return `${hours}시간 내`;
+      } else {
+        const days = Math.floor(responseTime / 1440);
+        return `${days}일 내`;
+      }
+    }
+    
+    return "답변 시간 정보 없음";
+  };
+
+  // 답변 시간 아이콘 색상
+  const getResponseTimeColor = (responseTime) => {
+    if (!responseTime) return "text-gray-400";
+    
+    if (typeof responseTime === 'number') {
+      if (responseTime < 60) {
+        return "text-green-500";
+      } else if (responseTime < 1440) {
+        return "text-yellow-500";
+      } else {
+        return "text-red-500";
+      }
+    }
+    
+    return "text-gray-400";
   };
 
   // 페이징 관련 계산
@@ -927,52 +958,64 @@ const ExpertSearch = () => {
         {/* 전문가 목록 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {currentExperts.map((expert) => {
-            const expertLevel = calculateExpertLevel(
-              expert.totalSessions,
-              expert.avgRating
-            );
+            // 레벨 정보 (직접 설정된 레벨 사용)
+            const expertLevel = {
+              level: expert.level || 1,
+              name: "expert"
+            };
+            console.log(`전문가 ${expert.name}의 레벨:`, expert.level, expertLevel.level);
             const levelBadgeStyles = getLevelBadgeStyles(expertLevel.name);
-            const creditsPerMinute = calculateCreditsPerMinute(expert);
+            // 레벨 기반 크레딧 계산
+            const creditsPerMinute = calculateCreditsPerMinute({
+              ...expert,
+              level: expert.level || 1 // 직접 설정된 레벨 사용
+            });
 
             return (
               <div
                 key={expert.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-blue-200"
               >
                 <div className="p-6">
                   {/* 전문가 기본 정보 */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        {expert.profileImage ? (
-                          <img
-                            src={expert.profileImage}
-                            alt={expert.name}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                            <Users className="h-6 w-6 text-gray-400" />
-                          </div>
-                        )}
-                        {expert.isOnline && (
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
-                        )}
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="flex items-center space-x-4">
+                      <div className="relative flex-shrink-0">
+                        <div className="w-24 h-24 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-gray-100">
+                          {expert.profileImage ? (
+                            <img
+                              src={expert.profileImage}
+                              alt={expert.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Users className="h-10 w-10 text-gray-400" />
+                          )}
+                        </div>
+                        {/* 전문가 레벨 표시 */}
+                        <div className={`absolute -bottom-1 -right-1 border-2 border-white rounded-full shadow-sm flex items-center justify-center ${
+                          expert.level >= 100 ? 'w-12 h-6 px-2' : 'w-10 h-6 px-1'
+                        } ${
+                          expert.level >= 800 ? 'bg-purple-500' :
+                          expert.level >= 600 ? 'bg-red-500' :
+                          expert.level >= 400 ? 'bg-orange-500' :
+                          expert.level >= 200 ? 'bg-yellow-500' :
+                          expert.level >= 100 ? 'bg-green-500' :
+                          'bg-blue-500'
+                        }`}>
+                          <span className="text-[10px] font-bold text-white">
+                            Lv.{expert.level}
+                          </span>
+                        </div>
+
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h3 className="text-xl font-bold text-gray-900 truncate">
                             {expert.name}
                           </h3>
-                          {/* 레벨 배지 */}
-                          <div
-                            className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${levelBadgeStyles.background} ${levelBadgeStyles.textColor}`}
-                          >
-                            <span>{levelBadgeStyles.icon}</span>
-                            <span>{getKoreanLevelName(expertLevel.name)}</span>
-                          </div>
                         </div>
-                        <p className="text-blue-600 font-medium">
+                        <p className="text-base text-gray-600 font-medium">
                           {expert.specialty}
                         </p>
                       </div>
@@ -996,8 +1039,8 @@ const ExpertSearch = () => {
                   {/* 평점 및 정보 */}
                   <div className="flex items-center space-x-4 mb-3">
                     <div className="flex items-center">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="text-sm font-medium text-gray-900 ml-1">
+                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      <span className="text-sm font-semibold text-gray-900 ml-1">
                         {expert.rating}
                       </span>
                       <span className="text-sm text-gray-500 ml-1">
@@ -1010,55 +1053,57 @@ const ExpertSearch = () => {
                     </div>
                   </div>
 
-                  {/* 가용성 */}
-                  <div className="flex items-center text-sm text-gray-500 mb-3">
-                    <Clock className="h-4 w-4 mr-1" />
-                    상담 가능: {expert.availableTime}
-                  </div>
-
                   {/* 설명 */}
                   <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                     {expert.description}
                   </p>
 
                   {/* 전문 분야 태그 */}
-                  <div className="flex flex-wrap gap-1 mb-4">
+                  <div className="flex gap-1.5 overflow-hidden mb-4">
                     {expert.specialties.slice(0, 3).map((specialty, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                        className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100 flex-shrink-0"
                       >
                         {specialty}
                       </span>
                     ))}
                     {expert.specialties.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                      <span className="px-2.5 py-1 bg-gray-50 text-gray-600 text-xs rounded-full border border-gray-100 flex-shrink-0">
                         +{expert.specialties.length - 3}
                       </span>
                     )}
                   </div>
 
-                  {/* 상담 방식 */}
-                  <div className="flex items-center space-x-2 mb-4">
-                    {expert.consultationTypes.map((type) => {
-                      const Icon = getConsultationTypeIcon(type);
-                      return (
-                        <div
-                          key={type}
-                          className="flex items-center text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded"
-                          title={getConsultationTypeLabel(type)}
-                        >
-                          <Icon className="h-3 w-3 mr-1" />
-                          {type === "video" && "화상"}
-                          {type === "chat" && "채팅"}
-                        </div>
-                      );
-                    })}
+                  {/* 상담 방식 및 답변 시간 */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-2">
+                      {expert.consultationTypes.map((type) => {
+                        const Icon = getConsultationTypeIcon(type);
+                        return (
+                          <div
+                            key={type}
+                            className="flex items-center text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded"
+                            title={getConsultationTypeLabel(type)}
+                          >
+                            <Icon className="h-3 w-3 mr-1" />
+                            {type === "video" && "화상"}
+                            {type === "chat" && "채팅"}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* 답변 시간 표시 */}
+                    <div className="flex items-center space-x-1 text-xs text-gray-600">
+                      <Clock className={`h-3 w-3 ${getResponseTimeColor(expert.responseTime)}`} />
+                      <span>{getResponseTimeText(expert.responseTime)}</span>
+                    </div>
                   </div>
 
                   {/* 가격 및 버튼 */}
-                  <div className="flex items-center justify-between">
-                    <div className="text-lg font-bold text-gray-900">
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="text-xl font-bold text-gray-900">
                       {creditsPerMinute} 크레딧
                       <span className="text-sm font-normal text-gray-500">
                         /분
@@ -1067,7 +1112,7 @@ const ExpertSearch = () => {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleProfileView(expert)}
-                        className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
                         aria-label={`${expert.name} 전문가 프로필 보기`}
                       >
                         프로필 보기
