@@ -160,7 +160,10 @@ const NotificationSettings = () => {
         <div className="space-y-8">
           {/* 알림 종류별 설정 */}
           {Object.entries(notificationTypes).map(([category, config]) => (
-            <div key={category} className="bg-white rounded-lg shadow-sm p-6">
+            <div
+              key={category}
+              className="bg-white rounded-lg p-6 shadow-sm border border-gray-200"
+            >
               <div className="flex items-center space-x-3 mb-6">
                 <config.icon className="h-6 w-6 text-blue-600" />
                 <div>
@@ -188,7 +191,7 @@ const NotificationSettings = () => {
           ))}
 
           {/* 인앱 알림 설정 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <div className="flex items-center space-x-3 mb-6">
               <Bell className="h-6 w-6 text-blue-600" />
               <div>
@@ -234,7 +237,7 @@ const NotificationSettings = () => {
           </div>
 
           {/* 방해 금지 시간 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <div className="flex items-center space-x-3 mb-6">
               <Calendar className="h-6 w-6 text-blue-600" />
               <div>
@@ -295,7 +298,7 @@ const NotificationSettings = () => {
           </div>
 
           {/* 알림 빈도 설정 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               알림 빈도
             </h2>

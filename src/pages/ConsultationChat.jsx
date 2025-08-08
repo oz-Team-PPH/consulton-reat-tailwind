@@ -32,7 +32,6 @@ const ConsultationChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isConsultationComplete, setIsConsultationComplete] = useState(false);
   const [consultationSummary, setConsultationSummary] = useState("");
-  const [showCompletionOptions, setShowCompletionOptions] = useState(false);
   const [showCreditModal, setShowCreditModal] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showQuickChatModal, setShowQuickChatModal] = useState(false);
@@ -53,10 +52,10 @@ const ConsultationChat = () => {
   // 사이드바의 Quick AI 상담 버튼 클릭 감지
   useEffect(() => {
     // sessionStorage에서 quick-chat 플래그 확인
-    const shouldShowQuickChat = sessionStorage.getItem('showQuickChatModal');
-    if (shouldShowQuickChat === 'true') {
+    const shouldShowQuickChat = sessionStorage.getItem("showQuickChatModal");
+    if (shouldShowQuickChat === "true") {
       setShowQuickChatModal(true);
-      sessionStorage.removeItem('showQuickChatModal');
+      sessionStorage.removeItem("showQuickChatModal");
     }
   }, [location.pathname]);
 
@@ -126,17 +125,39 @@ const ConsultationChat = () => {
         setIsConsultationComplete(true);
         const summary = generateConsultationSummary();
         setConsultationSummary(summary);
-        setTimeout(() => {
-          setShowCompletionOptions(true);
-        }, 1000);
       }
     }, 800 + Math.random() * 400);
   };
 
   const handleExpertMatching = () => {
-    // 전문가 매칭 페이지로 이동
-    window.location.href =
-      "/expert-matching?summary=" + encodeURIComponent(consultationSummary);
+    // 상담 요약에서 주제 추출
+    const summary = consultationSummary || generateConsultationSummary();
+
+    // 요약에서 주제 추출 (첫 번째 줄의 주제 부분)
+    const lines = summary.split("\n");
+    let topic = "";
+
+    // 주제 추출 로직
+    for (const line of lines) {
+      if (line.includes("【상담 주제】")) {
+        topic = line.replace("【상담 주제】", "").trim();
+        break;
+      }
+    }
+
+    // 주제가 없으면 기본값 설정
+    if (!topic) {
+      topic = "비즈니스 컨설팅";
+    }
+
+    // 전문가 찾기 페이지로 이동 (주제와 요약 모두 전달)
+    const params = new URLSearchParams({
+      topic: topic,
+      summary: summary,
+      fromChat: "true",
+    });
+
+    window.location.href = `/expert-search?${params.toString()}`;
   };
 
   const handleCommunityPost = () => {
@@ -173,7 +194,7 @@ const ConsultationChat = () => {
     window.location.reload();
   };
 
-    const handleEndConsultation = () => {
+  const handleEndConsultation = () => {
     // 대화 종료 처리 - 요약 표시
     const summary = generateConsultationSummary();
     setConsultationSummary(summary);
@@ -181,10 +202,17 @@ const ConsultationChat = () => {
     setIsConsultationComplete(true);
   };
 
-  const handleFindExpertWithSummary = () => {
-    // 요약본으로 전문가 찾기
-    const currentSummary = consultationSummary || generateConsultationSummary();
-    alert("요약본을 바탕으로 전문가를 찾습니다.\n\n요약 내용:\n" + currentSummary);
+  const handleResumeChat = () => {
+    // 무료 채팅이 남아있으면 채팅창으로 돌아가기
+    if (messageCount < 8) {
+      setShowSummary(false);
+      setIsConsultationComplete(false);
+    } else {
+      // 무료 채팅을 모두 사용한 경우 완료 상태 유지
+      alert(
+        "무료 채팅을 모두 사용하셨습니다. 크레딧을 사용하여 대화를 연장하거나 새로운 상담을 시작해주세요."
+      );
+    }
   };
 
   return (
@@ -220,9 +248,14 @@ const ConsultationChat = () => {
                 </div>
                 <div className="mt-3">
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-red-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                    <div
+                      className="bg-red-500 h-2 rounded-full"
+                      style={{ width: "60%" }}
+                    ></div>
                   </div>
-                  <p className="text-xs text-red-600 mt-1">크레딧이 부족합니다</p>
+                  <p className="text-xs text-red-600 mt-1">
+                    크레딧이 부족합니다
+                  </p>
                 </div>
               </div>
 
@@ -235,7 +268,7 @@ const ConsultationChat = () => {
                 >
                   크레딧 사용하기 (50크레딧)
                 </button>
-                
+
                 <button
                   onClick={handleChargeCredits}
                   className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
@@ -282,20 +315,29 @@ const ConsultationChat = () => {
                   <div>
                     <div className="flex justify-between mb-2">
                       <span>무료 채팅 사용량</span>
-                      <span className="font-medium">{Math.round((messageCount / 8) * 100)}%</span>
+                      <span className="font-medium">
+                        {Math.round((messageCount / 8) * 100)}%
+                      </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full transition-all duration-300 ${
-                          messageCount <= 4 ? 'bg-green-500' : 
-                          messageCount <= 6 ? 'bg-yellow-500' : 'bg-red-500'
-                        }`} 
+                          messageCount <= 4
+                            ? "bg-green-500"
+                            : messageCount <= 6
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                        }`}
                         style={{ width: `${(messageCount / 8) * 100}%` }}
                       ></div>
                     </div>
                     <div className="flex justify-between text-xs mt-1">
-                      <span className="text-green-600">사용: {Math.round((messageCount / 8) * 100)}%</span>
-                      <span className="text-blue-600">남음: {Math.round(((8 - messageCount) / 8) * 100)}%</span>
+                      <span className="text-green-600">
+                        사용: {Math.round((messageCount / 8) * 100)}%
+                      </span>
+                      <span className="text-blue-600">
+                        남음: {Math.round(((8 - messageCount) / 8) * 100)}%
+                      </span>
                     </div>
                   </div>
                   <div className="flex justify-between">
@@ -308,7 +350,8 @@ const ConsultationChat = () => {
                 {!isConsultationComplete && (
                   <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-xs text-yellow-800">
-                      ⚠️ 현재 상담이 진행 중입니다. 새로운 채팅을 시작하면 현재 사용량({messageCount}/8)이 그대로 적용됩니다.
+                      ⚠️ 현재 상담이 진행 중입니다. 새로운 채팅을 시작하면 현재
+                      사용량({messageCount}/8)이 그대로 적용됩니다.
                     </p>
                   </div>
                 )}
@@ -410,25 +453,28 @@ const ConsultationChat = () => {
                         </span>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">
-                        전문가 매칭 또는 커뮤니티 글 작성을 통해 더 구체적인 도움을 받아보세요
+                        전문가 매칭 또는 커뮤니티 글 작성을 통해 더 구체적인
+                        도움을 받아보세요
                       </p>
                       <p className="text-xs text-blue-600">
                         "대화 종료" 버튼을 눌러 상담을 마무리하세요
                       </p>
                     </div>
-                    
+
                     {showSummary && (
                       <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 rounded-lg p-6">
                         <div className="flex items-center mb-4">
                           <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mr-3">
                             <Sparkles className="w-4 h-4 text-white" />
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-900">상담 요약</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            상담 요약
+                          </h3>
                         </div>
                         <div className="text-sm text-gray-700 whitespace-pre-line mb-6">
                           {consultationSummary}
                         </div>
-                        
+
                         <div className="flex space-x-3">
                           <button
                             onClick={handleExpertMatching}
@@ -439,7 +485,7 @@ const ConsultationChat = () => {
                               전문가 찾기
                             </div>
                           </button>
-                          
+
                           <button
                             onClick={handleCommunityPost}
                             className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-4 rounded-lg font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md"
@@ -465,8 +511,8 @@ const ConsultationChat = () => {
             </div>
 
             {/* 사이드바 */}
-            <div className="w-64 bg-white border-l border-gray-200 h-full overflow-hidden">
-              <div className="p-4 h-full">
+            <div className="w-64 bg-white border-l border-gray-200 h-full overflow-hidden flex flex-col">
+              <div className="p-4 flex-1">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   AI 상담 정보
                 </h3>
@@ -486,7 +532,9 @@ const ConsultationChat = () => {
                         <Sparkles className="w-3 h-3 text-white" />
                       </div>
                       <h4 className="font-medium text-amber-900">
-                        {isConsultationComplete ? "다음 단계 안내" : "AI 어시스턴트 팁"}
+                        {isConsultationComplete
+                          ? "다음 단계 안내"
+                          : "AI 어시스턴트 팁"}
                       </h4>
                     </div>
                     <div className="space-y-2 text-sm text-amber-800">
@@ -494,15 +542,22 @@ const ConsultationChat = () => {
                         <>
                           <div className="flex items-start">
                             <span className="text-amber-600 mr-2">•</span>
-                            <span>전문가 매칭으로 구체적인 솔루션을 받아보세요</span>
+                            <span>
+                              전문가 매칭으로 구체적인 솔루션을 받아보세요
+                            </span>
                           </div>
                           <div className="flex items-start">
                             <span className="text-amber-600 mr-2">•</span>
-                            <span>커뮤니티에 상담 요청글을 올려 추가 조언을 받으세요</span>
+                            <span>
+                              커뮤니티에 상담 요청글을 올려 추가 조언을 받으세요
+                            </span>
                           </div>
                           <div className="flex items-start">
                             <span className="text-amber-600 mr-2">•</span>
-                            <span>새로운 AI 상담을 시작하여 다른 관점에서 접근해보세요</span>
+                            <span>
+                              새로운 AI 상담을 시작하여 다른 관점에서
+                              접근해보세요
+                            </span>
                           </div>
                         </>
                       ) : (
@@ -513,7 +568,9 @@ const ConsultationChat = () => {
                           </div>
                           <div className="flex items-start">
                             <span className="text-amber-600 mr-2">•</span>
-                            <span>예산이나 시간 제약이 있다면 언급해주세요</span>
+                            <span>
+                              예산이나 시간 제약이 있다면 언급해주세요
+                            </span>
                           </div>
                           <div className="flex items-start">
                             <span className="text-amber-600 mr-2">•</span>
@@ -523,41 +580,57 @@ const ConsultationChat = () => {
                       )}
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  {/* 액션 버튼들 */}
-                  <div className="space-y-3">
-                    <button
-                      onClick={handleQuickChat}
-                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                    >
-                      <div className="text-center">
-                        <div>새로운 AI상담시작</div>
-                        <div className="text-xs opacity-80 mt-1">새로운 상담 시작</div>
+              {/* 액션 버튼들 - 하단 고정 */}
+              <div className="p-4 border-t border-gray-200 bg-white">
+                <div className="space-y-3">
+                  <button
+                    onClick={handleQuickChat}
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    <div className="text-center">
+                      <div>새로운 AI상담시작</div>
+                      <div className="text-xs opacity-80 mt-1">
+                        새로운 상담 시작
                       </div>
-                    </button>
+                    </div>
+                  </button>
 
-                    <button
-                      onClick={handleContinueWithCredits}
-                      className="w-full bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-cyan-500 hover:via-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                    >
-                      <div className="text-center">
-                        <div>대화 연장하기</div>
-                        <div className="text-xs opacity-80 mt-1">+50크레딧</div>
-                      </div>
-                    </button>
+                  <button
+                    onClick={handleContinueWithCredits}
+                    className="w-full bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-cyan-500 hover:via-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    <div className="text-center">
+                      <div>대화 연장하기</div>
+                      <div className="text-xs opacity-80 mt-1">+50크레딧</div>
+                    </div>
+                  </button>
 
-                    <button
-                      onClick={handleEndConsultation}
-                      className={`w-full bg-gradient-to-r from-red-500 to-rose-600 text-white py-3 px-4 rounded-lg font-medium hover:from-red-600 hover:to-rose-700 transition-all duration-200 shadow-sm hover:shadow-md ${
-                        isConsultationComplete && !showSummary ? "animate-pulse" : ""
-                      }`}
-                    >
-                      <div className="text-center">
-                        <div>대화 종료</div>
-                        <div className="text-xs opacity-80 mt-1">요약본으로 전문가 찾기</div>
+                  <button
+                    onClick={
+                      showSummary ? handleResumeChat : handleEndConsultation
+                    }
+                    className={`w-full bg-gradient-to-r from-red-500 to-rose-600 text-white py-3 px-4 rounded-lg font-medium hover:from-red-600 hover:to-rose-700 transition-all duration-200 shadow-sm hover:shadow-md ${
+                      isConsultationComplete && !showSummary
+                        ? "animate-pulse"
+                        : ""
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div>
+                        {showSummary ? "채팅으로 돌아가기" : "대화 종료"}
                       </div>
-                    </button>
-                  </div>
+                      <div className="text-xs opacity-80 mt-1">
+                        {showSummary
+                          ? messageCount < 8
+                            ? "채팅 계속하기"
+                            : "AI 상담이 완료되었습니다"
+                          : "요약본으로 전문가 찾기"}
+                      </div>
+                    </div>
+                  </button>
                 </div>
               </div>
             </div>

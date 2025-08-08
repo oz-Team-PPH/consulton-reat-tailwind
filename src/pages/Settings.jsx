@@ -66,7 +66,7 @@ const Settings = () => {
         {/* 설정 카드들 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {/* 테마 설정 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <div className="flex items-center space-x-3 mb-4">
               <Palette className="h-6 w-6 text-blue-600" />
               <h3 className="text-lg font-semibold text-gray-900">테마 설정</h3>
@@ -100,7 +100,7 @@ const Settings = () => {
           </div>
 
           {/* 알림 설정 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <div className="flex items-center space-x-3 mb-4">
               <Bell className="h-6 w-6 text-blue-600" />
               <h3 className="text-lg font-semibold text-gray-900">알림 설정</h3>
@@ -155,7 +155,7 @@ const Settings = () => {
           </div>
 
           {/* 보안 설정 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <div className="flex items-center space-x-3 mb-4">
               <Shield className="h-6 w-6 text-blue-600" />
               <h3 className="text-lg font-semibold text-gray-900">보안 설정</h3>
@@ -192,7 +192,7 @@ const Settings = () => {
           </div>
 
           {/* 계정 설정 */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <div className="flex items-center space-x-3 mb-4">
               <Mail className="h-6 w-6 text-blue-600" />
               <h3 className="text-lg font-semibold text-gray-900">계정 설정</h3>

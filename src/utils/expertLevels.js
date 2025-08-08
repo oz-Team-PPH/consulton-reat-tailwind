@@ -1,204 +1,236 @@
 /**
  * 전문가 레벨 시스템 유틸리티
- * Firebase Functions의 로직을 프론트엔드에서 사용할 수 있도록 컴포넌트화
+ * 레벨 기반 과금 체계 (Lv.1-999)
  */
 
-// 전문가 레벨 정의 (10,000원 = 1,000크레딧 기준)
+// 레벨별 과금 체계 정의
 export const LEVELS = [
   {
-    name: "Diamond",
-    sessions: 200,
-    rating: 4.8,
-    baseCreditsPerMinute: 3000, // 분당 3,000 크레딧 (30,000원/분)
-    maxCreditsPerMinute: 4000, // 최대 분당 4,000 크레딧 (40,000원/분)
-    color: "from-blue-400 to-purple-500",
-    bgColor: "bg-gradient-to-r from-blue-100 to-purple-100",
+    name: "Tier 10 (Lv.999)",
+    levelRange: { min: 999, max: 999 },
+    creditsPerMinute: 6000, // 6,000원/분 (특별 최고 요금)
+    color: "from-red-500 to-pink-600",
+    bgColor: "bg-gradient-to-r from-red-100 to-pink-100",
+    textColor: "text-red-700",
+    borderColor: "border-red-500",
+  },
+  {
+    name: "Tier 10 (Lv.900-998)",
+    levelRange: { min: 900, max: 998 },
+    creditsPerMinute: 5000, // 5,000원/분 (고정 요금)
+    color: "from-purple-500 to-indigo-600",
+    bgColor: "bg-gradient-to-r from-purple-100 to-indigo-100",
     textColor: "text-purple-700",
     borderColor: "border-purple-500",
   },
   {
-    name: "Platinum",
-    sessions: 100,
-    rating: 4.7,
-    baseCreditsPerMinute: 2200, // 분당 2,200 크레딧 (22,000원/분)
-    maxCreditsPerMinute: 2800, // 최대 분당 2,800 크레딧 (28,000원/분)
-    color: "from-gray-300 to-gray-500",
-    bgColor: "bg-gradient-to-r from-gray-100 to-gray-200",
-    textColor: "text-gray-700",
-    borderColor: "border-gray-400",
+    name: "Tier 9 (Lv.800-899)",
+    levelRange: { min: 800, max: 899 },
+    creditsPerMinute: 5000, // 5,000원/분
+    color: "from-indigo-500 to-blue-600",
+    bgColor: "bg-gradient-to-r from-indigo-100 to-blue-100",
+    textColor: "text-indigo-700",
+    borderColor: "border-indigo-500",
   },
   {
-    name: "Gold",
-    sessions: 60,
-    rating: 4.5,
-    baseCreditsPerMinute: 1800, // 분당 1,800 크레딧 (18,000원/분)
-    maxCreditsPerMinute: 2100, // 최대 분당 2,100 크레딧 (21,000원/분)
-    color: "from-yellow-400 to-orange-500",
+    name: "Tier 8 (Lv.700-799)",
+    levelRange: { min: 700, max: 799 },
+    creditsPerMinute: 4500, // 4,500원/분
+    color: "from-blue-500 to-cyan-600",
+    bgColor: "bg-gradient-to-r from-blue-100 to-cyan-100",
+    textColor: "text-blue-700",
+    borderColor: "border-blue-500",
+  },
+  {
+    name: "Tier 7 (Lv.600-699)",
+    levelRange: { min: 600, max: 699 },
+    creditsPerMinute: 4000, // 4,000원/분
+    color: "from-cyan-500 to-teal-600",
+    bgColor: "bg-gradient-to-r from-cyan-100 to-teal-100",
+    textColor: "text-cyan-700",
+    borderColor: "border-cyan-500",
+  },
+  {
+    name: "Tier 6 (Lv.500-599)",
+    levelRange: { min: 500, max: 599 },
+    creditsPerMinute: 3500, // 3,500원/분
+    color: "from-teal-500 to-green-600",
+    bgColor: "bg-gradient-to-r from-teal-100 to-green-100",
+    textColor: "text-teal-700",
+    borderColor: "border-teal-500",
+  },
+  {
+    name: "Tier 5 (Lv.400-499)",
+    levelRange: { min: 400, max: 499 },
+    creditsPerMinute: 3000, // 3,000원/분
+    color: "from-green-500 to-emerald-600",
+    bgColor: "bg-gradient-to-r from-green-100 to-emerald-100",
+    textColor: "text-green-700",
+    borderColor: "border-green-500",
+  },
+  {
+    name: "Tier 4 (Lv.300-399)",
+    levelRange: { min: 300, max: 399 },
+    creditsPerMinute: 2500, // 2,500원/분
+    color: "from-emerald-500 to-lime-600",
+    bgColor: "bg-gradient-to-r from-emerald-100 to-lime-100",
+    textColor: "text-emerald-700",
+    borderColor: "border-emerald-500",
+  },
+  {
+    name: "Tier 3 (Lv.200-299)",
+    levelRange: { min: 200, max: 299 },
+    creditsPerMinute: 2000, // 2,000원/분
+    color: "from-lime-500 to-yellow-600",
+    bgColor: "bg-gradient-to-r from-lime-100 to-yellow-100",
+    textColor: "text-lime-700",
+    borderColor: "border-lime-500",
+  },
+  {
+    name: "Tier 2 (Lv.100-199)",
+    levelRange: { min: 100, max: 199 },
+    creditsPerMinute: 1500, // 1,500원/분
+    color: "from-yellow-500 to-orange-600",
     bgColor: "bg-gradient-to-r from-yellow-100 to-orange-100",
-    textColor: "text-orange-700",
+    textColor: "text-yellow-700",
     borderColor: "border-yellow-500",
   },
   {
-    name: "Silver",
-    sessions: 30,
-    rating: 4.3,
-    baseCreditsPerMinute: 1500, // 분당 1,500 크레딧 (15,000원/분)
-    maxCreditsPerMinute: 1700, // 최대 분당 1,700 크레딧 (17,000원/분)
-    color: "from-gray-400 to-gray-600",
-    bgColor: "bg-gradient-to-r from-gray-50 to-gray-100",
-    textColor: "text-gray-600",
-    borderColor: "border-gray-500",
-  },
-  {
-    name: "Bronze",
-    sessions: 5,
-    rating: 4.0,
-    baseCreditsPerMinute: 1200, // 분당 1,200 크레딧 (12,000원/분)
-    maxCreditsPerMinute: 1400, // 최대 분당 1,400 크레딧 (14,000원/분)
-    color: "from-amber-600 to-amber-800",
-    bgColor: "bg-gradient-to-r from-amber-50 to-amber-100",
-    textColor: "text-amber-700",
-    borderColor: "border-amber-600",
+    name: "Tier 1 (Lv.1-99)",
+    levelRange: { min: 1, max: 99 },
+    creditsPerMinute: 1000, // 1,000원/분 (최저 요금)
+    color: "from-orange-500 to-red-600",
+    bgColor: "bg-gradient-to-r from-orange-100 to-red-100",
+    textColor: "text-orange-700",
+    borderColor: "border-orange-500",
   },
 ];
 
 /**
- * 전문가의 현재 레벨을 계산합니다.
- * @param {number} totalSessions - 총 상담 세션 수
- * @param {number} avgRating - 평균 평점
- * @returns {Object} 레벨 정보 객체
- */
-export const calculateExpertLevel = (totalSessions = 0, avgRating = 0) => {
-  // 조건을 만족하는 가장 높은 레벨을 찾습니다
-  const level = LEVELS.find(
-    (l) => totalSessions >= l.sessions && avgRating >= l.rating
-  );
-  return level || LEVELS[LEVELS.length - 1]; // 기본값은 Bronze
-};
-
-/**
- * 레벨명으로 레벨 정보를 가져옵니다.
- * @param {string} levelName - 레벨명
- * @returns {Object} 레벨 정보 객체
- */
-export const getLevelInfo = (levelName) => {
-  return LEVELS.find((l) => l.name === levelName) || LEVELS[LEVELS.length - 1];
-};
-
-/**
- * 분당 크레딧 요금을 계산합니다.
- * @param {Object} expert - 전문가 정보
- * @param {number} expert.totalSessions - 총 상담 세션 수
- * @param {number} expert.avgRating - 평균 평점
- * @param {number} expert.creditsPerMinute - 현재 설정된 분당 크레딧 (선택사항)
+ * 레벨에 따른 과금을 계산합니다.
+ * @param {number} level - 전문가 레벨 (1-999)
  * @returns {number} 분당 크레딧 요금
  */
-export const calculateCreditsPerMinute = (expert) => {
-  const { totalSessions = 0, avgRating = 0, creditsPerMinute } = expert;
-  const level = calculateExpertLevel(totalSessions, avgRating);
-
-  // 현재 분당 크레딧이 설정되어 있고 최대 요금을 초과하지 않으면 그대로 사용
-  if (creditsPerMinute && creditsPerMinute <= level.maxCreditsPerMinute) {
-    return creditsPerMinute;
-  }
-
-  // 레벨에 따른 기본 분당 크레딧 반환
-  return level.baseCreditsPerMinute;
+export const calculateCreditsByLevel = (level = 1) => {
+  const tier = LEVELS.find(
+    (l) => level >= l.levelRange.min && level <= l.levelRange.max
+  );
+  return tier
+    ? tier.creditsPerMinute
+    : LEVELS[LEVELS.length - 1].creditsPerMinute;
 };
 
 /**
- * 다음 레벨까지의 진행률을 계산합니다.
- * @param {number} totalSessions - 총 상담 세션 수
- * @param {number} avgRating - 평균 평점
+ * 레벨에 따른 티어 정보를 반환합니다.
+ * @param {number} level - 전문가 레벨 (1-999)
+ * @returns {Object} 티어 정보 객체
+ */
+export const getTierInfo = (level = 1) => {
+  const tier = LEVELS.find(
+    (l) => level >= l.levelRange.min && level <= l.levelRange.max
+  );
+  return tier || LEVELS[LEVELS.length - 1];
+};
+
+/**
+ * 레벨명으로 티어 정보를 가져옵니다.
+ * @param {string} tierName - 티어명
+ * @returns {Object} 티어 정보 객체
+ */
+export const getTierInfoByName = (tierName) => {
+  return LEVELS.find((l) => l.name === tierName) || LEVELS[LEVELS.length - 1];
+};
+
+/**
+ * 다음 티어까지의 진행률을 계산합니다.
+ * @param {number} level - 현재 레벨
  * @returns {Object} 진행률 정보
  */
-export const getNextLevelProgress = (totalSessions = 0, avgRating = 0) => {
-  const currentLevel = calculateExpertLevel(totalSessions, avgRating);
-  const currentLevelIndex = LEVELS.findIndex(
-    (l) => l.name === currentLevel.name
-  );
+export const getNextTierProgress = (level = 1) => {
+  const currentTier = getTierInfo(level);
+  const currentTierIndex = LEVELS.findIndex((l) => l.name === currentTier.name);
 
-  // 이미 최고 레벨인 경우
-  if (currentLevelIndex === 0) {
+  // 이미 최고 티어인 경우
+  if (currentTierIndex === 0) {
     return {
-      isMaxLevel: true,
+      isMaxTier: true,
       progress: 100,
-      nextLevel: null,
-      sessionsNeeded: 0,
-      ratingNeeded: 0,
+      nextTier: null,
+      levelsNeeded: 0,
     };
   }
 
-  const nextLevel = LEVELS[currentLevelIndex - 1];
-  const sessionsProgress = Math.min(
+  const nextTier = LEVELS[currentTierIndex - 1];
+  const currentTierMaxLevel = currentTier.levelRange.max;
+  const nextTierMinLevel = nextTier.levelRange.min;
+
+  const progress = Math.min(
     100,
-    (totalSessions / nextLevel.sessions) * 100
+    ((level - currentTier.levelRange.min) /
+      (currentTierMaxLevel - currentTier.levelRange.min)) *
+      100
   );
-  const ratingProgress = Math.min(100, (avgRating / nextLevel.rating) * 100);
-  const overallProgress = Math.min(sessionsProgress, ratingProgress);
 
   return {
-    isMaxLevel: false,
-    progress: overallProgress,
-    nextLevel,
-    sessionsNeeded: Math.max(0, nextLevel.sessions - totalSessions),
-    ratingNeeded: Math.max(0, nextLevel.rating - avgRating),
-    sessionsProgress,
-    ratingProgress,
+    isMaxTier: false,
+    progress: Math.round(progress),
+    nextTier,
+    levelsNeeded: Math.max(0, nextTierMinLevel - level),
+    currentTierMaxLevel,
+    nextTierMinLevel,
   };
 };
 
 /**
- * 레벨 배지 컴포넌트에 필요한 스타일 정보를 반환합니다.
- * @param {string} levelName - 레벨명
+ * 티어 배지 컴포넌트에 필요한 스타일 정보를 반환합니다.
+ * @param {number} level - 레벨
  * @returns {Object} 스타일 정보
  */
-export const getLevelBadgeStyles = (levelName) => {
-  const level = getLevelInfo(levelName);
+export const getTierBadgeStyles = (level) => {
+  const tier = getTierInfo(level);
   return {
-    gradient: level.color,
-    background: level.bgColor,
-    textColor: level.textColor,
-    borderColor: level.borderColor,
+    gradient: tier.color,
+    background: tier.bgColor,
+    textColor: tier.textColor,
+    borderColor: tier.borderColor,
   };
 };
 
 /**
  * 레벨별 요금 정보를 반환합니다.
- * @param {string} levelName - 레벨명
+ * @param {number} level - 레벨
  * @returns {Object} 요금 정보
  */
-export const getLevelPricing = (levelName) => {
-  const level = getLevelInfo(levelName);
+export const getLevelPricing = (level) => {
+  const tier = getTierInfo(level);
   return {
-    baseCreditsPerMinute: level.baseCreditsPerMinute,
-    maxCreditsPerMinute: level.maxCreditsPerMinute,
-    baseCreditsPerHour: level.baseCreditsPerMinute * 60,
-    maxCreditsPerHour: level.maxCreditsPerMinute * 60,
+    creditsPerMinute: tier.creditsPerMinute,
+    creditsPerHour: tier.creditsPerMinute * 60,
+    tierName: tier.name,
   };
 };
 
 /**
  * 전문가 레벨 시스템의 전체 통계를 계산합니다.
  * @param {Array} experts - 전문가 목록
- * @returns {Object} 레벨별 통계
+ * @returns {Object} 티어별 통계
  */
-export const calculateLevelStatistics = (experts = []) => {
-  const stats = LEVELS.reduce((acc, level) => {
-    acc[level.name] = { count: 0, percentage: 0 };
+export const calculateTierStatistics = (experts = []) => {
+  const stats = LEVELS.reduce((acc, tier) => {
+    acc[tier.name] = { count: 0, percentage: 0 };
     return acc;
   }, {});
 
   experts.forEach((expert) => {
-    const level = calculateExpertLevel(expert.totalSessions, expert.avgRating);
-    stats[level.name].count++;
+    const tier = getTierInfo(expert.level || 1);
+    stats[tier.name].count++;
   });
 
   const total = experts.length;
   if (total > 0) {
-    Object.keys(stats).forEach((levelName) => {
-      stats[levelName].percentage = Math.round(
-        (stats[levelName].count / total) * 100
+    Object.keys(stats).forEach((tierName) => {
+      stats[tierName].percentage = Math.round(
+        (stats[tierName].count / total) * 100
       );
     });
   }
@@ -207,17 +239,68 @@ export const calculateLevelStatistics = (experts = []) => {
 };
 
 /**
- * 한국어 레벨명을 반환합니다.
- * @param {string} levelName - 영문 레벨명
- * @returns {string} 한국어 레벨명
+ * 한국어 티어명을 반환합니다.
+ * @param {string} tierName - 영문 티어명
+ * @returns {string} 한국어 티어명
  */
-export const getKoreanLevelName = (levelName) => {
-  const levelMap = {
-    Diamond: "다이아몬드",
-    Platinum: "플래티넘",
-    Gold: "골드",
-    Silver: "실버",
-    Bronze: "브론즈",
+export const getKoreanTierName = (tierName) => {
+  const tierMap = {
+    "Tier 10 (Lv.999)": "티어 10 (Lv.999)",
+    "Tier 10 (Lv.900-998)": "티어 10 (Lv.900-998)",
+    "Tier 9 (Lv.800-899)": "티어 9 (Lv.800-899)",
+    "Tier 8 (Lv.700-799)": "티어 8 (Lv.700-799)",
+    "Tier 7 (Lv.600-699)": "티어 7 (Lv.600-699)",
+    "Tier 6 (Lv.500-599)": "티어 6 (Lv.500-599)",
+    "Tier 5 (Lv.400-499)": "티어 5 (Lv.400-499)",
+    "Tier 4 (Lv.300-399)": "티어 4 (Lv.300-399)",
+    "Tier 3 (Lv.200-299)": "티어 3 (Lv.200-299)",
+    "Tier 2 (Lv.100-199)": "티어 2 (Lv.100-199)",
+    "Tier 1 (Lv.1-99)": "티어 1 (Lv.1-99)",
   };
-  return levelMap[levelName] || levelName;
+  return tierMap[tierName] || tierName;
+};
+
+// 기존 함수명과의 호환성을 위한 별칭
+export const calculateExpertLevel = (totalSessions = 0, avgRating = 0) => {
+  // 레벨 계산 로직 (세션 수와 평점을 기반으로 레벨 계산)
+  const level = Math.min(
+    999,
+    Math.max(1, Math.floor(totalSessions / 10) + Math.floor(avgRating * 10))
+  );
+  return getTierInfo(level);
+};
+
+export const getLevelInfo = (levelName) => {
+  return getTierInfoByName(levelName);
+};
+
+export const calculateCreditsPerMinute = (expert) => {
+  const level = expert.level || 1;
+  return calculateCreditsByLevel(level);
+};
+
+export const getNextLevelProgress = (totalSessions = 0, avgRating = 0) => {
+  const level = Math.min(
+    999,
+    Math.max(1, Math.floor(totalSessions / 10) + Math.floor(avgRating * 10))
+  );
+  return getNextTierProgress(level);
+};
+
+export const getLevelBadgeStyles = (levelName) => {
+  const tier = getTierInfoByName(levelName);
+  return {
+    gradient: tier.color,
+    background: tier.bgColor,
+    textColor: tier.textColor,
+    borderColor: tier.borderColor,
+  };
+};
+
+export const calculateLevelStatistics = (experts = []) => {
+  return calculateTierStatistics(experts);
+};
+
+export const getKoreanLevelName = (levelName) => {
+  return getKoreanTierName(levelName);
 };

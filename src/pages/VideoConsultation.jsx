@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Mic,
   MicOff,
@@ -19,6 +20,13 @@ import {
 } from "lucide-react";
 
 const VideoConsultation = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 상담 모드 상태
+  const [consultationMode, setConsultationMode] = useState("video"); // "chat", "voice", "video"
+  const [showModeSelection, setShowModeSelection] = useState(true);
+
   // 사용자 개별 컨트롤 상태
   const [userControls, setUserControls] = useState({
     isVideoOn: true,
@@ -28,7 +36,7 @@ const VideoConsultation = () => {
   });
 
   // 전문가 개별 컨트롤 상태
-  const [expertControls, setExpertControls] = useState({
+  const [expertControls] = useState({
     isVideoOn: true,
     isAudioOn: true,
     isScreenSharing: false,
@@ -59,7 +67,6 @@ const VideoConsultation = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [screenShareStream, setScreenShareStream] = useState(null);
   const [showMediaUploadModal, setShowMediaUploadModal] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   useEffect(() => {
     // 컴포넌트 로딩 시 즉시 미디어 권한 요청
@@ -184,47 +191,22 @@ const VideoConsultation = () => {
       };
       setChatMessages((prev) => [...prev, endMessage]);
 
-      // 상담 상태 초기화
-      setIsConsultationStarted(false);
-      setExpertJoined(false);
-      setUserJoined(false);
-      setShowConsultationStartModal(false);
-      setExpertConfirmed(false);
-      setUserConfirmed(false);
-      setSessionTime(0);
+      // 상담 완료 페이지로 이동
+      const sessionData = {
+        expert: location.state?.expert,
+        duration: sessionTime,
+        usedCredits: Math.ceil((sessionTime / 60) * 180), // 180 크레딧/분 가정
+        consultationType: location.state?.consultationType || "video",
+        startTime: location.state?.startTime || new Date(),
+        endTime: new Date(),
+        summary: "상담 내용 요약이 생성 중입니다...",
+        recordingUrl: null,
+        transcriptUrl: null,
+      };
 
-      // 개별 컨트롤 상태 초기화
-      setUserControls({
-        isVideoOn: true,
-        isAudioOn: true,
-        isScreenSharing: false,
-        isRecording: false,
+      navigate("/consultation-complete", {
+        state: { sessionData },
       });
-      setExpertControls({
-        isVideoOn: true,
-        isAudioOn: true,
-        isScreenSharing: false,
-        isRecording: false,
-      });
-
-      // 3초 후 새로운 세션 시작 (데모용)
-      setTimeout(() => {
-        setUserJoined(true);
-      }, 3000);
-      setTimeout(() => {
-        setExpertJoined(true);
-
-        // 데모용으로 전문가 상태를 랜덤하게 변경
-        setTimeout(() => {
-          setExpertControls((prev) => ({
-            ...prev,
-            isVideoOn: Math.random() > 0.5,
-            isAudioOn: Math.random() > 0.3,
-            isScreenSharing: Math.random() > 0.8,
-            isRecording: Math.random() > 0.7,
-          }));
-        }, 2000);
-      }, 5000);
     }
   };
 
@@ -403,8 +385,6 @@ const VideoConsultation = () => {
       timestamp: new Date(),
     }));
 
-    setUploadedFiles((prev) => [...prev, ...newFiles]);
-
     // 채팅 메시지에 파일 업로드 메시지 추가
     newFiles.forEach((file) => {
       const fileMessage = {
@@ -432,7 +412,6 @@ const VideoConsultation = () => {
   };
 
   const handleRemoveFile = (fileId) => {
-    setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId));
     setChatMessages((prev) =>
       prev.filter((msg) => !(msg.type === "file" && msg.file?.id === fileId))
     );
@@ -440,10 +419,94 @@ const VideoConsultation = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* 미디어 권한 요청 모달 */}
-      {!mediaPermissionGranted && (
+      {/* 상담 모드 선택 모달 */}
+      {showModeSelection && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+          <div className="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 shadow-xl border border-gray-200">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                상담 모드 선택
+              </h2>
+              <p className="text-gray-600">
+                전문가와 어떤 방식으로 상담하시겠습니까?
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {/* 채팅 상담 */}
+              <button
+                onClick={() => {
+                  setConsultationMode("chat");
+                  setShowModeSelection(false);
+                }}
+                className="group p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all duration-300 text-left"
+              >
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
+                  <MessageCircle className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  채팅 상담
+                </h3>
+                <p className="text-sm text-gray-600">
+                  텍스트 기반으로 전문가와 실시간 상담을 진행합니다.
+                </p>
+              </button>
+
+              {/* 음성 상담 */}
+              <button
+                onClick={() => {
+                  setConsultationMode("voice");
+                  setShowModeSelection(false);
+                }}
+                className="group p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 text-left"
+              >
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
+                  <Mic className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  음성 상담
+                </h3>
+                <p className="text-sm text-gray-600">
+                  음성만으로 전문가와 실시간 상담을 진행합니다.
+                </p>
+              </button>
+
+              {/* 화상 상담 */}
+              <button
+                onClick={() => {
+                  setConsultationMode("video");
+                  setShowModeSelection(false);
+                }}
+                className="group p-6 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:shadow-lg transition-all duration-300 text-left"
+              >
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
+                  <Video className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  화상 상담
+                </h3>
+                <p className="text-sm text-gray-600">
+                  화상과 음성으로 전문가와 실시간 상담을 진행합니다.
+                </p>
+              </button>
+            </div>
+
+            <div className="text-center">
+              <button
+                onClick={() => setShowModeSelection(false)}
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+              >
+                나중에 선택
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 미디어 권한 요청 모달 */}
+      {!mediaPermissionGranted && consultationMode !== "chat" && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-sm border border-gray-200">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Video className="w-8 h-8 text-blue-600" />
@@ -452,7 +515,9 @@ const VideoConsultation = () => {
                 미디어 권한 요청
               </h2>
               <p className="text-gray-600 mb-6">
-                화상 상담을 위해 마이크와 카메라 사용 권한이 필요합니다.
+                {consultationMode === "voice"
+                  ? "음성 상담을 위해 마이크 사용 권한이 필요합니다."
+                  : "화상 상담을 위해 마이크와 카메라 사용 권한이 필요합니다."}
               </p>
 
               {showSuccessMessage && (
@@ -519,7 +584,7 @@ const VideoConsultation = () => {
       {/* 파일 업로드 모달 */}
       {showMediaUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-sm border border-gray-200">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Paperclip className="w-8 h-8 text-blue-600" />
@@ -568,17 +633,22 @@ const VideoConsultation = () => {
       {/* 헤드라인 섹션 */}
       <div className="bg-gray-50 py-12 text-center">
         <div className="max-w-4xl mx-auto px-6">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">화상 상담</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">전문가 상담</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            전문가와 실시간 화상 상담을 통해 더욱 효과적인 컨설팅을 경험하세요
+            전문가와 채팅, 음성, 화상 상담을 통해 더욱 효과적인 컨설팅을
+            경험하세요
           </p>
         </div>
       </div>
 
       {/* 상단 헤더 */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm border border-gray-200">
         <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-bold text-gray-900">상담 세션</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            {consultationMode === "chat" && "채팅 상담"}
+            {consultationMode === "voice" && "음성 상담"}
+            {consultationMode === "video" && "화상 상담"}
+          </h2>
           <div className="flex items-center space-x-2 bg-green-50 border border-green-200 text-green-700 px-3 py-1 rounded-full text-sm">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="font-medium">연결됨</span>
@@ -622,16 +692,32 @@ const VideoConsultation = () => {
             <span className="font-medium">2명 참여</span>
           </div>
 
+          {consultationMode === "video" && (
+            <button
+              onClick={() => setShowVideoGrid(!showVideoGrid)}
+              className={`p-2 rounded-lg border transition-colors relative ${
+                showVideoGrid
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+              }`}
+              title="비디오 화면 표시/숨김"
+            >
+              <Video className="h-5 w-5" />
+            </button>
+          )}
+
+          {/* 상담 모드 변경 버튼 */}
           <button
-            onClick={() => setShowVideoGrid(!showVideoGrid)}
-            className={`p-2 rounded-lg border transition-colors relative ${
-              showVideoGrid
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-            }`}
-            title="비디오 화면 표시/숨김"
+            onClick={() => setShowModeSelection(true)}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium flex items-center space-x-2"
+            title="상담 모드 변경"
           >
-            <Video className="h-5 w-5" />
+            {consultationMode === "chat" && (
+              <MessageCircle className="w-4 h-4" />
+            )}
+            {consultationMode === "voice" && <Mic className="w-4 h-4" />}
+            {consultationMode === "video" && <Video className="w-4 h-4" />}
+            <span>상담모드 변경</span>
           </button>
         </div>
       </div>
@@ -639,7 +725,7 @@ const VideoConsultation = () => {
       {/* 메인 콘텐츠 영역 */}
       <div className="flex-1 flex bg-gray-50 relative min-h-0">
         {/* 메인 채팅 영역 */}
-        <div className="flex-1 bg-white flex flex-col min-h-0">
+        <div className="flex-1 bg-white flex flex-col min-h-0 shadow-sm border border-gray-200">
           {/* 채팅 메시지 영역 */}
           <div className="flex-1 p-6 overflow-y-auto space-y-4 min-h-0 max-h-[calc(100vh-300px)]">
             {chatMessages.map((message) => (
@@ -783,10 +869,10 @@ const VideoConsultation = () => {
         </div>
 
         {/* 우측 상단 비디오 그리드 */}
-        {showVideoGrid && (
+        {showVideoGrid && consultationMode === "video" && (
           <div className="absolute top-4 right-4 w-80 space-y-3 z-10">
             {/* 전문가 비디오 */}
-            <div className="relative bg-white rounded-lg overflow-hidden shadow-lg border border-gray-200">
+            <div className="relative bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
               <div className="w-full h-48 bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-center">
                 {expertControls.isVideoOn ? (
                   <div className="text-center">
@@ -855,7 +941,7 @@ const VideoConsultation = () => {
             </div>
 
             {/* 사용자 비디오 (같은 크기) */}
-            <div className="relative bg-white rounded-lg overflow-hidden shadow-lg border border-gray-200">
+            <div className="relative bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
               <div className="w-full h-48 bg-gradient-to-br from-green-50 to-emerald-100 flex flex-col items-center justify-center">
                 {userControls.isVideoOn ? (
                   <div className="text-center">
@@ -925,7 +1011,7 @@ const VideoConsultation = () => {
 
             {/* 화면 공유 비디오창 */}
             {userControls.isScreenSharing && (
-              <div className="relative bg-white rounded-lg overflow-hidden shadow-lg border-2 border-blue-300">
+              <div className="relative bg-white rounded-lg overflow-hidden shadow-sm border-2 border-blue-300">
                 <div className="w-full h-32 bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-center">
                   <div className="text-center">
                     <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-2 shadow-lg">
@@ -986,109 +1072,131 @@ const VideoConsultation = () => {
       </div>
 
       {/* 하단 컨트롤 바 */}
-      <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-center shadow-sm">
+      <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-center shadow-sm border border-gray-200">
         <div className="flex items-center space-x-3">
-          {/* 마이크 버튼 */}
-          <button
-            onClick={() =>
-              setUserControls((prev) => ({
-                ...prev,
-                isAudioOn: !prev.isAudioOn,
-              }))
-            }
-            className={`p-4 rounded-full border transition-colors ${
-              userControls.isAudioOn
-                ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
-                : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
-            }`}
-            title={userControls.isAudioOn ? "마이크 끄기" : "마이크 켜기"}
-          >
-            {userControls.isAudioOn ? (
-              <Mic className="h-6 w-6" />
-            ) : (
-              <MicOff className="h-6 w-6" />
-            )}
-          </button>
+          {/* 채팅 모드일 때는 파일 업로드만 표시 */}
+          {consultationMode === "chat" && (
+            <button
+              onClick={() => setShowMediaUploadModal(true)}
+              className="p-4 bg-blue-600 text-white border border-blue-600 rounded-full hover:bg-blue-700 transition-colors"
+              title="파일 업로드"
+            >
+              <Paperclip className="h-6 w-6" />
+            </button>
+          )}
 
-          {/* 비디오 버튼 */}
-          <button
-            onClick={() =>
-              setUserControls((prev) => ({
-                ...prev,
-                isVideoOn: !prev.isVideoOn,
-              }))
-            }
-            className={`p-4 rounded-full border transition-colors ${
-              userControls.isVideoOn
-                ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
-                : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
-            }`}
-            title={userControls.isVideoOn ? "비디오 끄기" : "비디오 켜기"}
-          >
-            {userControls.isVideoOn ? (
-              <Video className="h-6 w-6" />
-            ) : (
-              <VideoOff className="h-6 w-6" />
-            )}
-          </button>
+          {/* 음성/화상 모드일 때는 모든 컨트롤 표시 */}
+          {(consultationMode === "voice" || consultationMode === "video") && (
+            <>
+              {/* 마이크 버튼 */}
+              <button
+                onClick={() =>
+                  setUserControls((prev) => ({
+                    ...prev,
+                    isAudioOn: !prev.isAudioOn,
+                  }))
+                }
+                className={`p-4 rounded-full border transition-colors ${
+                  userControls.isAudioOn
+                    ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                    : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                }`}
+                title={userControls.isAudioOn ? "마이크 끄기" : "마이크 켜기"}
+              >
+                {userControls.isAudioOn ? (
+                  <Mic className="h-6 w-6" />
+                ) : (
+                  <MicOff className="h-6 w-6" />
+                )}
+              </button>
 
-          {/* 화면 공유 버튼 */}
-          <button
-            onClick={() => {
-              if (userControls.isScreenSharing) {
-                stopScreenShare();
-              } else {
-                handleScreenShare();
-              }
-            }}
-            className={`p-4 rounded-full border transition-colors ${
-              userControls.isScreenSharing
-                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
-            }`}
-            title={
-              userControls.isScreenSharing ? "화면 공유 중지" : "화면 공유 시작"
-            }
-          >
-            {userControls.isScreenSharing ? (
-              <MonitorOff className="h-6 w-6" />
-            ) : (
-              <Monitor className="h-6 w-6" />
-            )}
-          </button>
+              {/* 화상 모드일 때만 비디오 버튼 표시 */}
+              {consultationMode === "video" && (
+                <button
+                  onClick={() =>
+                    setUserControls((prev) => ({
+                      ...prev,
+                      isVideoOn: !prev.isVideoOn,
+                    }))
+                  }
+                  className={`p-4 rounded-full border transition-colors ${
+                    userControls.isVideoOn
+                      ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                      : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                  }`}
+                  title={userControls.isVideoOn ? "비디오 끄기" : "비디오 켜기"}
+                >
+                  {userControls.isVideoOn ? (
+                    <Video className="h-6 w-6" />
+                  ) : (
+                    <VideoOff className="h-6 w-6" />
+                  )}
+                </button>
+              )}
 
-          {/* 녹화 버튼 */}
-          <button
-            onClick={() =>
-              setUserControls((prev) => ({
-                ...prev,
-                isRecording: !prev.isRecording,
-              }))
-            }
-            className={`p-4 rounded-full border transition-colors ${
-              userControls.isRecording
-                ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
-                : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
-            }`}
-            title={userControls.isRecording ? "녹화 중지" : "녹화 시작"}
-          >
-            <div
-              className={`w-6 h-6 rounded-full ${
-                userControls.isRecording
-                  ? "bg-red-600"
-                  : "border-2 border-current"
-              }`}
-            />
-          </button>
+              {/* 화상 모드일 때만 화면 공유 버튼 표시 */}
+              {consultationMode === "video" && (
+                <button
+                  onClick={() => {
+                    if (userControls.isScreenSharing) {
+                      stopScreenShare();
+                    } else {
+                      handleScreenShare();
+                    }
+                  }}
+                  className={`p-4 rounded-full border transition-colors ${
+                    userControls.isScreenSharing
+                      ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                      : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                  }`}
+                  title={
+                    userControls.isScreenSharing
+                      ? "화면 공유 중지"
+                      : "화면 공유 시작"
+                  }
+                >
+                  {userControls.isScreenSharing ? (
+                    <MonitorOff className="h-6 w-6" />
+                  ) : (
+                    <Monitor className="h-6 w-6" />
+                  )}
+                </button>
+              )}
 
-          {/* 미디어 추가 버튼 */}
-          <button
-            onClick={() => setShowMediaUploadModal(true)}
-            className="p-4 bg-gray-50 text-gray-700 border border-gray-200 rounded-full hover:bg-gray-100 transition-colors"
-            title="파일 업로드"
-          >
-            <Paperclip className="h-6 w-6" />
-          </button>
+              {/* 녹화 버튼 */}
+              <button
+                onClick={() =>
+                  setUserControls((prev) => ({
+                    ...prev,
+                    isRecording: !prev.isRecording,
+                  }))
+                }
+                className={`p-4 rounded-full border transition-colors ${
+                  userControls.isRecording
+                    ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                    : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                }`}
+                title={userControls.isRecording ? "녹화 중지" : "녹화 시작"}
+              >
+                <div
+                  className={`w-6 h-6 rounded-full ${
+                    userControls.isRecording
+                      ? "bg-red-600"
+                      : "border-2 border-current"
+                  }`}
+                />
+              </button>
+
+              {/* 미디어 추가 버튼 */}
+              <button
+                onClick={() => setShowMediaUploadModal(true)}
+                className="p-4 bg-gray-50 text-gray-700 border border-gray-200 rounded-full hover:bg-gray-100 transition-colors"
+                title="파일 업로드"
+              >
+                <Paperclip className="h-6 w-6" />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

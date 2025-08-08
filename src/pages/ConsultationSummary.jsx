@@ -168,7 +168,7 @@ const ConsultationSummary = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 헤더 */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-4">
@@ -253,7 +253,7 @@ const ConsultationSummary = () => {
               items={summaryData.summary.keyPoints}
             />
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 추천 사항
               </h3>
@@ -289,7 +289,7 @@ const ConsultationSummary = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
               <div className="flex items-center space-x-2 mb-4">
                 <Tag className="h-5 w-5 text-gray-400" />
                 <h3 className="text-lg font-semibold text-gray-900">태그</h3>
@@ -339,7 +339,7 @@ const ConsultationSummary = () => {
 
         {/* 평점 및 피드백 */}
         {!summaryData.rating && (
-          <div className="mt-8 bg-white rounded-lg shadow-sm p-6">
+          <div className="mt-8 bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               상담은 어떠셨나요?
             </h3>

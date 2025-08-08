@@ -15,9 +15,11 @@ import ConsultationChat from "./pages/ConsultationChat";
 import Community from "./pages/Community";
 
 import ExpertSearch from "./pages/ExpertSearch";
+import ExpertProfile from "./pages/ExpertProfile";
 import ConsultationSummary from "./pages/ConsultationSummary";
 import VideoConsultation from "./pages/VideoConsultation";
 import NotificationSettings from "./pages/NotificationSettings";
+import ConsultationComplete from "./pages/ConsultationComplete";
 
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
@@ -69,13 +71,16 @@ function App() {
     return (
       <div className="flex min-h-screen">
         {/* 사이드바 */}
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
+        />
 
         {/* 메인 콘텐츠 */}
         <div className="flex-1 flex flex-col">
           {/* 상단 네비게이션 */}
           <Navbar
-            onMenuClick={() => setSidebarOpen(true)}
             onBackToLanding={handleBackToLanding}
             onNavigate={handleNavigation}
             user={{ name: "김철수", avatar: null }}
@@ -87,11 +92,20 @@ function App() {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/expert-search" element={<ExpertSearch />} />
+              <Route path="/expert/:expertId" element={<ExpertProfile />} />
               <Route path="/community" element={<Community />} />
               <Route path="/credit-packages" element={<CreditPackages />} />
               <Route path="/chat" element={<ConsultationChat />} />
 
               <Route path="/video" element={<VideoConsultation />} />
+              <Route
+                path="/video-consultation"
+                element={<VideoConsultation />}
+              />
+              <Route
+                path="/consultation-complete"
+                element={<ConsultationComplete />}
+              />
               <Route path="/summary/:id" element={<ConsultationSummary />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/notifications" element={<NotificationSettings />} />

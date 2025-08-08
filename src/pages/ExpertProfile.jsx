@@ -19,6 +19,10 @@ import {
   ArrowLeft,
   Heart,
   Share2,
+  CreditCard,
+  ArrowRight,
+  Shield,
+  CheckCircle as CheckCircleIcon,
 } from "lucide-react";
 import {
   calculateExpertLevel,
@@ -36,6 +40,12 @@ const ExpertProfile = () => {
   const [expert, setExpert] = useState(location.state?.expert || null);
   const [loading, setLoading] = useState(!expert);
   const [isFavorite, setIsFavorite] = useState(false);
+
+  // 상담 시작 관련 상태
+  const [consultationType, setConsultationType] = useState("chat");
+  const [estimatedDuration, setEstimatedDuration] = useState(30);
+  const [userCredits] = useState(150); // 실제로는 API에서 가져옴
+  const [isStartingConsultation, setIsStartingConsultation] = useState(false);
 
   useEffect(() => {
     // 만약 state로 전달된 데이터가 없다면 API에서 데이터를 가져와야 함
@@ -73,7 +83,7 @@ const ExpertProfile = () => {
           text: `${expert.specialty} 전문가 ${expert.name}님의 프로필을 확인해보세요.`,
           url: window.location.href,
         });
-      } catch (error) {
+      } catch {
         console.log("공유 취소됨");
       }
     } else {
@@ -83,12 +93,81 @@ const ExpertProfile = () => {
     }
   };
 
-  // 상담 신청 핸들러
-  const handleConsultationRequest = () => {
-    // 상담 신청 모달 또는 페이지로 이동
-    navigate("/consultation/request", {
-      state: { expert: expert },
-    });
+  // 상담 방법 선택 데이터
+  const consultationTypes = [
+    {
+      id: "chat",
+      name: "채팅 상담",
+      icon: MessageCircle,
+      description: "실시간 텍스트 상담",
+      creditRate: 1.0,
+      features: ["실시간 채팅", "파일 공유", "상담 요약 제공"],
+      color: "blue",
+    },
+    {
+      id: "voice",
+      name: "음성 상담",
+      icon: Phone,
+      description: "음성 통화 상담",
+      creditRate: 1.2,
+      features: ["고품질 음성 통화", "녹음 서비스", "상담 요약 제공"],
+      color: "green",
+    },
+    {
+      id: "video",
+      name: "화상 상담",
+      icon: Video,
+      description: "화상 통화 상담",
+      creditRate: 1.5,
+      features: ["HD 화상 통화", "화면 공유", "녹화 서비스", "상담 요약 제공"],
+      color: "purple",
+    },
+  ];
+
+  const selectedType = consultationTypes.find(
+    (type) => type.id === consultationType
+  );
+  const baseCredits = expert?.creditsPerMinute * estimatedDuration || 0;
+  const finalCredits = Math.round(baseCredits * selectedType.creditRate);
+  const hasEnoughCredits = userCredits >= finalCredits;
+
+  // 상담 시작/예약 핸들러
+  const handleStartConsultation = async () => {
+    if (!hasEnoughCredits) {
+      alert("크레딧이 부족합니다. 크레딧을 충전해주세요.");
+      navigate("/credit-packages");
+      return;
+    }
+
+    setIsStartingConsultation(true);
+
+    try {
+      // 상담 시작/예약 API 호출 시뮬레이션
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      if (expert.availability === "available") {
+        // 즉시 상담 시작
+        navigate("/video-consultation", {
+          state: {
+            expert: expert,
+            consultationType: consultationType,
+            estimatedDuration: estimatedDuration,
+            consultationSummary: location.state?.consultationSummary,
+            consultationTopic: location.state?.consultationTopic,
+          },
+        });
+      } else {
+        // 상담 예약 처리
+        alert(
+          "상담이 성공적으로 예약되었습니다. 전문가가 확인 후 연락드리겠습니다."
+        );
+      }
+    } catch (error) {
+      console.error("상담 시작/예약 실패:", error);
+      alert("상담을 시작할 수 없습니다. 다시 시도해주세요.");
+    } finally {
+      setIsStartingConsultation(false);
+    }
   };
 
   if (loading) {
@@ -171,7 +250,7 @@ const ExpertProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 헤더 */}
         <div className="mb-6">
           <button
@@ -334,22 +413,6 @@ const ExpertProfile = () => {
                         <span className="text-lg text-gray-600">크레딧/분</span>
                       </div>
                     </div>
-
-                    <button
-                      onClick={handleConsultationRequest}
-                      disabled={expert.availability === "offline"}
-                      className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                        expert.availability === "offline"
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-blue-600 text-white hover:bg-blue-700"
-                      }`}
-                    >
-                      {expert.availability === "available"
-                        ? "상담 신청"
-                        : expert.availability === "busy"
-                        ? "대기 예약"
-                        : "오프라인"}
-                    </button>
                   </div>
                 </div>
               </div>
@@ -357,9 +420,9 @@ const ExpertProfile = () => {
           </div>
         </div>
 
-        {/* 상세 정보 탭들 */}
+        {/* 메인 콘텐츠 그리드 */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* 왼쪽 컬럼 - 주요 정보 */}
+          {/* 왼쪽 컬럼 - 전문가 정보 */}
           <div className="lg:col-span-2 space-y-8">
             {/* 소개 */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -429,6 +492,278 @@ const ExpertProfile = () => {
                   </ul>
                 </div>
               )}
+            </div>
+
+            {/* 상담 예약 섹션 */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                상담 예약
+              </h3>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* 왼쪽 - 상담 방법 선택 */}
+                <div className="space-y-6">
+                  {/* 상담 방법 선택 */}
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 mb-4">
+                      상담 방법 선택
+                    </h4>
+                    <div className="space-y-3">
+                      {consultationTypes.map((type) => {
+                        const IconComponent = type.icon;
+                        return (
+                          <div
+                            key={type.id}
+                            onClick={() => setConsultationType(type.id)}
+                            className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                              consultationType === type.id
+                                ? `border-${type.color}-600 bg-${type.color}-50`
+                                : "border-gray-200 hover:border-gray-300"
+                            }`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div
+                                className={`w-10 h-10 bg-${type.color}-100 rounded-lg flex items-center justify-center`}
+                              >
+                                <IconComponent
+                                  className={`w-5 h-5 text-${type.color}-600`}
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <h5 className="font-medium text-gray-900">
+                                  {type.name}
+                                </h5>
+                                <p className="text-sm text-gray-600">
+                                  {type.description}
+                                </p>
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {type.features.map((feature, index) => (
+                                    <span
+                                      key={index}
+                                      className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded"
+                                    >
+                                      {feature}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 예상 시간 선택 */}
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 mb-4">
+                      예상 상담 시간
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="range"
+                          min="15"
+                          max="120"
+                          step="15"
+                          value={estimatedDuration}
+                          onChange={(e) =>
+                            setEstimatedDuration(parseInt(e.target.value))
+                          }
+                          className="flex-1"
+                        />
+                        <div className="flex items-center space-x-2">
+                          <Clock className="h-5 w-5 text-gray-400" />
+                          <span className="font-medium text-gray-900">
+                            {estimatedDuration}분
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>15분</span>
+                        <span>2시간</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 상담 요약 (있는 경우) */}
+                  {location.state?.consultationSummary && (
+                    <div>
+                      <h4 className="text-md font-medium text-gray-900 mb-4">
+                        상담 요약
+                      </h4>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {location.state.consultationSummary}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 오른쪽 - 요약 및 시작 버튼 */}
+                <div className="space-y-6">
+                  {/* 크레딧 정보 */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="text-md font-medium text-gray-900 mb-4">
+                      크레딧 정보
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">보유 크레딧</span>
+                        <span className="font-medium">
+                          {userCredits} 크레딧
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">예상 사용 크레딧</span>
+                        <span className="font-medium">
+                          {finalCredits} 크레딧
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">잔여 크레딧</span>
+                        <span
+                          className={`font-medium ${
+                            hasEnoughCredits ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
+                          {userCredits - finalCredits} 크레딧
+                        </span>
+                      </div>
+                    </div>
+
+                    {!hasEnoughCredits && (
+                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="flex items-center">
+                          <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+                          <span className="text-sm text-red-700">
+                            크레딧이 부족합니다. 크레딧을 충전해주세요.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 상담 정보 요약 */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="text-md font-medium text-gray-900 mb-4">
+                      상담 정보
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">전문가</span>
+                        <span className="font-medium">{expert.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">상담 방법</span>
+                        <span className="font-medium">{selectedType.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">예상 시간</span>
+                        <span className="font-medium">
+                          {estimatedDuration}분
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">분당 요금</span>
+                        <span className="font-medium">
+                          {expert.creditsPerMinute} 크레딧
+                        </span>
+                      </div>
+                      <div className="border-t pt-3 flex justify-between">
+                        <span className="font-semibold text-gray-900">
+                          총 사용 크레딧
+                        </span>
+                        <span className="font-bold text-lg text-blue-600">
+                          {finalCredits} 크레딧
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 안전한 상담 안내 */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <Shield className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-medium text-blue-800 mb-1">
+                          안전한 상담 환경
+                        </p>
+                        <p className="text-blue-700">
+                          모든 상담은 암호화되어 안전하게 진행되며, 상담 내용은
+                          비공개로 보호됩니다.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 오프라인 상태 안내 */}
+                  {expert.availability !== "available" && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <div className="flex items-start">
+                        <Clock className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" />
+                        <div className="text-sm">
+                          <p className="font-medium text-yellow-800 mb-1">
+                            전문가가 현재 오프라인 상태입니다
+                          </p>
+                          <p className="text-yellow-700">
+                            상담을 예약하시면 전문가가 온라인 상태가 되었을 때
+                            연락드리겠습니다.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 상담 시작/예약 버튼 */}
+                  <button
+                    onClick={handleStartConsultation}
+                    disabled={!hasEnoughCredits || isStartingConsultation}
+                    className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 ${
+                      !hasEnoughCredits || isStartingConsultation
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : expert.availability === "available"
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-green-600 text-white hover:bg-green-700"
+                    }`}
+                  >
+                    {isStartingConsultation ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <span>
+                          {expert.availability === "available"
+                            ? "상담 준비 중..."
+                            : "예약 처리 중..."}
+                        </span>
+                      </>
+                    ) : !hasEnoughCredits ? (
+                      <>
+                        <CreditCard className="h-5 w-5" />
+                        <span>크레딧 충전 필요</span>
+                      </>
+                    ) : (
+                      <>
+                        <ArrowRight className="h-5 w-5" />
+                        <span>
+                          {expert.availability === "available"
+                            ? "상담 시작하기"
+                            : "상담 예약하기"}
+                        </span>
+                      </>
+                    )}
+                  </button>
+
+                  {!hasEnoughCredits && (
+                    <button
+                      onClick={() => navigate("/credit-packages")}
+                      className="w-full py-3 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    >
+                      크레딧 충전하기
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 

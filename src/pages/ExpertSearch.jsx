@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
   Star,
@@ -15,6 +15,23 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
+  Brain,
+  Scale,
+  DollarSign,
+  Heart as HeartIcon,
+  Target,
+  Home,
+  Monitor,
+  BookOpen,
+  Youtube,
+  TrendingUp,
+  Zap,
+  Palette,
+  Camera,
+  Mic,
+  Smartphone,
+  Globe,
+  ShoppingBag,
 } from "lucide-react";
 import {
   calculateExpertLevel,
@@ -22,9 +39,11 @@ import {
   getLevelBadgeStyles,
   getKoreanLevelName,
 } from "../utils/expertLevels";
+import ConsultationRecommendation from "../components/recommendation/ConsultationRecommendation";
 
 const ExpertSearch = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState({
     specialty: "",
@@ -39,6 +58,12 @@ const ExpertSearch = () => {
   const [filteredExperts, setFilteredExperts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(9);
+  const [consultationTopic, setConsultationTopic] = useState("");
+  const [consultationSummary, setConsultationSummary] = useState("");
+  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [isRecommendationCollapsed, setIsRecommendationCollapsed] =
+    useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   // 샘플 전문가 데이터 (실제로는 API에서 가져올 데이터)
   const allExperts = [
@@ -366,7 +391,53 @@ const ExpertSearch = () => {
     "부동산상담",
     "IT상담",
     "교육상담",
+    "유튜브상담",
+    "인플루언서상담",
+    "창업상담",
+    "투자상담",
+    "디자인상담",
+    "마케팅상담",
+    "언어상담",
+    "쇼핑몰상담",
   ];
+
+  // URL 파라미터에서 상담 정보 가져오기
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const topic = params.get("topic");
+    const summary = params.get("summary");
+    const fromChat = params.get("fromChat");
+
+    if (fromChat === "true" && topic && summary) {
+      setConsultationTopic(topic);
+      setConsultationSummary(summary);
+      setShowRecommendation(true);
+
+      // 주제에 맞는 전문분야 자동 설정
+      const topicToSpecialty = {
+        "온라인 비즈니스 마케팅 전략": "IT상담",
+        마케팅: "IT상담",
+        비즈니스: "IT상담",
+        심리: "심리상담",
+        법률: "법률상담",
+        재무: "재무상담",
+        건강: "건강상담",
+        진로: "진로상담",
+        부동산: "부동산상담",
+        교육: "교육상담",
+      };
+
+      for (const [key, specialty] of Object.entries(topicToSpecialty)) {
+        if (topic.includes(key)) {
+          setSelectedFilters((prev) => ({ ...prev, specialty }));
+          break;
+        }
+      }
+    } else {
+      // AI 상담을 진행하지 않은 경우에도 추천 섹션 표시
+      setShowRecommendation(true);
+    }
+  }, [location.search]);
 
   // 필터링 로직
   useEffect(() => {
@@ -492,7 +563,6 @@ const ExpertSearch = () => {
   // 페이지 변경 핸들러
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePrevPage = () => {
@@ -514,6 +584,8 @@ const ExpertSearch = () => {
       state: {
         expert: expert,
         from: "expert-search",
+        consultationSummary: consultationSummary,
+        consultationTopic: consultationTopic,
       },
     });
   };
@@ -536,6 +608,15 @@ const ExpertSearch = () => {
             </div>
           </div>
         </div>
+
+        {/* 상담 요약 추천 섹션 */}
+        <ConsultationRecommendation
+          consultationTopic={consultationTopic}
+          consultationSummary={consultationSummary}
+          showRecommendation={showRecommendation}
+          isRecommendationCollapsed={isRecommendationCollapsed}
+          setIsRecommendationCollapsed={setIsRecommendationCollapsed}
+        />
 
         {/* 검색 및 필터 바 */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
@@ -577,6 +658,125 @@ const ExpertSearch = () => {
               <option value="experience">경력 많은 순</option>
               <option value="reviews">리뷰 많은 순</option>
             </select>
+          </div>
+
+          {/* 인기 카테고리 */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-700">
+                인기 카테고리
+              </h3>
+              <button
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                {showAllCategories ? "접기" : "더보기"}
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {[
+                {
+                  name: "심리상담",
+                  icon: Brain,
+                  color: "bg-purple-100 text-purple-700 hover:bg-purple-200",
+                },
+                {
+                  name: "법률상담",
+                  icon: Scale,
+                  color: "bg-blue-100 text-blue-700 hover:bg-blue-200",
+                },
+                {
+                  name: "재무상담",
+                  icon: DollarSign,
+                  color: "bg-green-100 text-green-700 hover:bg-green-200",
+                },
+                {
+                  name: "건강상담",
+                  icon: HeartIcon,
+                  color: "bg-red-100 text-red-700 hover:bg-red-200",
+                },
+                {
+                  name: "진로상담",
+                  icon: Target,
+                  color: "bg-orange-100 text-orange-700 hover:bg-orange-200",
+                },
+                {
+                  name: "부동산상담",
+                  icon: Home,
+                  color: "bg-indigo-100 text-indigo-700 hover:bg-indigo-200",
+                },
+                {
+                  name: "IT상담",
+                  icon: Monitor,
+                  color: "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                },
+                {
+                  name: "교육상담",
+                  icon: BookOpen,
+                  color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200",
+                },
+                {
+                  name: "유튜브상담",
+                  icon: Youtube,
+                  color: "bg-red-100 text-red-700 hover:bg-red-200",
+                },
+                {
+                  name: "인플루언서상담",
+                  icon: TrendingUp,
+                  color: "bg-pink-100 text-pink-700 hover:bg-pink-200",
+                },
+                {
+                  name: "창업상담",
+                  icon: Zap,
+                  color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200",
+                },
+                {
+                  name: "투자상담",
+                  icon: TrendingUp,
+                  color: "bg-emerald-100 text-emerald-700 hover:bg-emerald-200",
+                },
+                {
+                  name: "디자인상담",
+                  icon: Palette,
+                  color: "bg-violet-100 text-violet-700 hover:bg-violet-200",
+                },
+                {
+                  name: "마케팅상담",
+                  icon: Smartphone,
+                  color: "bg-cyan-100 text-cyan-700 hover:bg-cyan-200",
+                },
+                {
+                  name: "언어상담",
+                  icon: Globe,
+                  color: "bg-teal-100 text-teal-700 hover:bg-teal-200",
+                },
+                {
+                  name: "쇼핑몰상담",
+                  icon: ShoppingBag,
+                  color: "bg-rose-100 text-rose-700 hover:bg-rose-200",
+                },
+              ]
+                .slice(0, showAllCategories ? undefined : 7)
+                .map((category) => {
+                  const IconComponent = category.icon;
+                  return (
+                    <button
+                      key={category.name}
+                      onClick={() => {
+                        setSelectedFilters((prev) => ({
+                          ...prev,
+                          specialty: category.name,
+                        }));
+                        setSearchQuery("");
+                      }}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${category.color}`}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                      <span>{category.name}</span>
+                    </button>
+                  );
+                })}
+            </div>
           </div>
 
           {/* 필터 패널 */}
@@ -678,7 +878,7 @@ const ExpertSearch = () => {
           )}
         </div>
 
-        {/* 검색 결과 */}
+        {/* 검색 결과 및 상단 페이징 */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <p className="text-gray-600">
@@ -690,6 +890,37 @@ const ExpertSearch = () => {
                 </span>
               )}
             </p>
+
+            {/* 상단 페이징 (이전/다음만) */}
+            {filteredExperts.length > 0 && totalPages > 1 && (
+              <div className="flex items-center space-x-2">
+                {/* 이전 버튼 */}
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className={`flex items-center px-2 py-1 rounded border transition-colors text-sm ${
+                    currentPage === 1
+                      ? "border-gray-300 text-gray-400 cursor-not-allowed"
+                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                {/* 다음 버튼 */}
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`flex items-center px-2 py-1 rounded border transition-colors text-sm ${
+                    currentPage === totalPages
+                      ? "border-gray-300 text-gray-400 cursor-not-allowed"
+                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -849,79 +1080,38 @@ const ExpertSearch = () => {
           })}
         </div>
 
-        {/* 페이징 */}
+        {/* 하단 페이징 (이전/다음만) */}
         {filteredExperts.length > 0 && totalPages > 1 && (
-          <div className="flex items-center justify-center mt-8 space-x-2">
-            {/* 이전 버튼 */}
-            <button
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-              className={`flex items-center px-3 py-2 rounded-lg border transition-colors ${
-                currentPage === 1
-                  ? "border-gray-300 text-gray-400 cursor-not-allowed"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              이전
-            </button>
+          <div className="mt-8">
+            <div className="flex items-center justify-center space-x-4">
+              {/* 이전 버튼 */}
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className={`flex items-center px-4 py-2 rounded-lg border transition-colors ${
+                  currentPage === 1
+                    ? "border-gray-300 text-gray-400 cursor-not-allowed"
+                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                이전
+              </button>
 
-            {/* 페이지 번호들 */}
-            <div className="flex items-center space-x-1">
-              {Array.from({ length: totalPages }, (_, index) => {
-                const pageNumber = index + 1;
-                const isCurrentPage = pageNumber === currentPage;
-
-                // 현재 페이지 주변 페이지만 표시 (최대 5개)
-                const showPage =
-                  pageNumber === 1 ||
-                  pageNumber === totalPages ||
-                  Math.abs(pageNumber - currentPage) <= 2;
-
-                if (!showPage) {
-                  // 생략 표시
-                  if (
-                    pageNumber === currentPage - 3 ||
-                    pageNumber === currentPage + 3
-                  ) {
-                    return (
-                      <span key={pageNumber} className="px-2 text-gray-400">
-                        ...
-                      </span>
-                    );
-                  }
-                  return null;
-                }
-
-                return (
-                  <button
-                    key={pageNumber}
-                    onClick={() => handlePageChange(pageNumber)}
-                    className={`px-3 py-2 rounded-lg border transition-colors ${
-                      isCurrentPage
-                        ? "border-blue-500 bg-blue-500 text-white"
-                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                );
-              })}
+              {/* 다음 버튼 */}
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className={`flex items-center px-4 py-2 rounded-lg border transition-colors ${
+                  currentPage === totalPages
+                    ? "border-gray-300 text-gray-400 cursor-not-allowed"
+                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                다음
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </button>
             </div>
-
-            {/* 다음 버튼 */}
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-              className={`flex items-center px-3 py-2 rounded-lg border transition-colors ${
-                currentPage === totalPages
-                  ? "border-gray-300 text-gray-400 cursor-not-allowed"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              다음
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </button>
           </div>
         )}
 
